@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerenciador de Chamados</title>
+<link rel="icon" type="image/png" href="https://files.manuscdn.com/user_upload_by_module/session_file/310519663634196533/ilHdejdAqHlBrrdG.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<!-- Exportação Word nativa (sem biblioteca externa) -->
+<script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --pri: #004691; /* Azul Maracaju */
+    --pri-dark: #003366;
+    --pri-light: #f0f7ff;
+    --pri-mid: #0056b3;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface2: #f1f5f9;
+    --border: #e2e8f0;
+    --border2: #cbd5e1;
+    --text: #0f172a;
+    --text2: #334155;
+    --text3: #64748b;
+    --baixa: #15803d; --baixa-bg: #f0fdf4; --baixa-border: #bbf7d0;
+    --media: #b45309; --media-bg: #fffbeb; --media-border: #fef3c7;
+    --alta: #b91c1c;  --alta-bg: #fef2f2;  --alta-border: #fee2e2;
+    --radius: 12px;
+    --radius-lg: 16px;
+    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── LOGIN SCREEN ── */
+  .login-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--pri) 0%, var(--pri-dark) 100%);
+  }
+
+  .login-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 3rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+  }
+
+  .login-logo-container {
+    width: 100%;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .login-logo-img {
+    max-width: 100%;
+    height: auto;
+    max-height: 120px;
+    object-fit: contain;
+  }
+
+  .login-title {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .login-subtitle {
+    font-size: 14px;
+    color: var(--text3);
+    margin-bottom: 2rem;
+  }
+
+  .login-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .login-tab {
+    flex: 1;
+    padding: 10px;
+    background: none;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text3);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .login-tab.active {
+    color: var(--pri);
+    border-bottom-color: var(--pri);
+  }
+
+  .login-form {
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .login-form.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .form-group-login {
+    margin-bottom: 1rem;
+    text-align: left;
+  }
+
+  .form-group-login label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+
+  .form-group-login input {
+    width: 100%;
+    padding: 10px 13px;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .form-group-login input:focus {
+    border-color: var(--pri);
+    box-shadow: 0 0 0 3px rgba(26,86,219,0.12);
+  }
+
+  .btn-login {
+    width: 100%;
+    padding: 12px;
+    background: var(--pri);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 4px 12px rgba(26,86,219,0.3);
+  }
+
+  .btn-login:hover {
+    background: var(--pri-dark);
+    box-shadow: 0 6px 16px rgba(26,86,219,0.4);
+  }
+
+  .btn-login:active {
+    transform: scale(0.99);
+  }
+
+  .login-error {
+    background: #FEE2E2;
+    color: #991B1B;
+    padding: 10px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    margin-bottom: 1rem;
+    display: none;
+  }
+
+  .login-error.show {
+    display: block;
+  }
+
+  /* ── DIVISOR LOGIN ── */
+  .login-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 14px 0 10px;
+    color: var(--text3);
+    font-size: 12px;
+  }
+  .login-divider::before,
+  .login-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── BOTÃO CRIAR SENHA ── */
+  .btn-criar-senha {
+    width: 100%;
+    padding: 11px;
+    background: transparent;
+    color: var(--pri);
+    border: 2px solid var(--pri);
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+  }
+  .btn-criar-senha:hover {
+    background: var(--pri-light);
+  }
+
+  /* ── MODAL CRIAR SENHA ── */
+  #modal-criar-senha .modal-content {
+    max-width: 420px;
+  }
+  .tipo-pill-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.2rem;
+  }
+  .tipo-pill {
+    flex: 1;
+    padding: 9px;
+    border: 2px solid var(--border2);
+    border-radius: var(--radius);
+    background: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tipo-pill.active {
+    border-color: var(--pri);
+    background: var(--pri-light);
+    color: var(--pri);
+  }
+
+  /* ── PASSWORD INPUT WRAPPER ── */
+  .pwd-wrap {
+    position: relative;
+  }
+  .pwd-wrap input {
+    padding-right: 42px;
+  }
+  .pwd-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    color: var(--text3);
+    transition: color 0.15s;
+  }
+  .pwd-toggle:hover { color: var(--pri); }
+  .pwd-toggle svg { width: 18px; height: 18px; }
+
+  /* ── LINK TROCAR SENHA ── */
+  .link-change-pwd {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--pri);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    text-decoration: underline;
+    padding: 0;
+  }
+  .link-change-pwd:hover { color: var(--pri-dark); }
+
+  /* ── FORÇA DA SENHA ── */
+  .pwd-strength-bar {
+    height: 4px;
+    border-radius: 2px;
+    margin-top: 6px;
+    background: var(--border);
+    overflow: hidden;
+  }
+  .pwd-strength-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s, background 0.3s;
+    width: 0%;
+  }
+  .pwd-strength-text {
+    font-size: 11px;
+    margin-top: 4px;
+    font-weight: 500;
+    min-height: 16px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 8px rgba(15,22,41,0.06);
+  }
+
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  .header-logo-img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .logo-text { font-size: 16px; font-weight: 700; color: var(--pri); letter-spacing: -0.01em; }
+  .logo-sub  { font-size: 11px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.02em; }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  .header-info-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  .header-date, .header-weather {
+    font-size: 11px;
+    color: var(--text2);
+    background: var(--surface2);
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .header-clock {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--pri);
+  }
+
+  .user-badge {
+    background: var(--pri-light);
+    color: var(--pri);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .btn-logout {
+    padding: 6px 14px;
+    background: #FEE2E2;
+    color: #991B1B;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-logout:hover {
+    background: #FCA5A5;
+  }
+
+  /* ── LAYOUT ── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  main.admin-view {
+    grid-template-columns: 1fr;
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: var(--shadow);
+    transition: all 0.2s ease;
+  }
+
+  .stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--pri-mid); }
+
+  .stat-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .stat-icon svg { width: 20px; height: 20px; }
+  .si-total  { background: var(--pri-light); }
+  .si-total svg  { stroke: var(--pri); }
+  .si-baixa  { background: var(--baixa-bg); }
+  .si-baixa svg  { stroke: var(--baixa); }
+  .si-media  { background: var(--media-bg); }
+  .si-media svg  { stroke: var(--media); }
+  .si-alta   { background: var(--alta-bg); }
+  .si-alta svg   { stroke: var(--alta); }
+
+  .stat-info { min-width: 0; }
+  .stat-num  { font-size: 24px; font-weight: 600; line-height: 1; font-family: 'DM Mono', monospace; }
+  .stat-label{ font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .sn-total  { color: var(--pri); }
+  .sn-baixa  { color: var(--baixa); }
+  .sn-media  { color: var(--media); }
+  .sn-alta   { color: var(--alta); }
+
+  /* ── PANEL ── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .panel-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .panel-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--pri);
+  }
+
+  .panel-title {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text2);
+  }
+
+  .panel-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-export {
+    padding: 6px 12px;
+    background: var(--pri-light);
+    color: var(--pri);
+    border: 1px solid var(--pri);
+    border-radius: var(--radius);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-export:hover {
+    background: var(--pri);
+    color: #fff;
+  }
+
+  .panel-body { padding: 1.25rem; }
+
+  /* ── FORM ── */
+  .form-group { margin-bottom: 1rem; }
+  .form-group:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+
+  label .req { color: var(--alta); margin-left: 2px; }
+
+  input[type="text"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 9px 13px;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    line-height: 1.5;
+  }
+
+  input[type="text"]:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--pri);
+    box-shadow: 0 0 0 3px rgba(26,86,219,0.12);
+  }
+
+  input::placeholder, textarea::placeholder { color: var(--text3); }
+
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234A5578' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 13px center;
+    cursor: pointer;
+  }
+
+  textarea { resize: vertical; min-height: 90px; }
+
+  .local-preview {
+    margin-top: 10px;
+    padding: 10px;
+    background: var(--pri-light);
+    border-radius: var(--radius);
+    border: 1px solid var(--pri-mid);
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .local-preview.active { display: block; }
+
+  .preview-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--pri);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .preview-item {
+    font-size: 12px;
+    color: var(--text2);
+    display: flex;
+    gap: 5px;
+    margin-bottom: 2px;
+  }
+
+  .preview-item b { color: var(--text); }
+
+  .btn-primary {
+    width: 100%;
+    padding: 11px;
+    background: var(--pri);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+    box-shadow: 0 2px 6px rgba(26,86,219,0.25);
+    margin-top: 1.25rem;
+  }
+
+  .btn-primary:hover { background: var(--pri-dark); box-shadow: 0 4px 12px rgba(26,86,219,0.3); }
+  .btn-primary:active { transform: scale(0.99); }
+  .btn-primary svg { width: 16px; height: 16px; }
+
+  /* ── LISTA PANEL ── */
+  .list-controls {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .search-wrap {
+    position: relative;
+  }
+
+  .search-wrap svg {
+    position: absolute;
+    left: 11px; top: 50%;
+    transform: translateY(-50%);
+    width: 15px; height: 15px;
+    stroke: var(--text3);
+    pointer-events: none;
+  }
+
+  .search-wrap input {
+    padding-left: 34px;
+    border-radius: 20px;
+    background: var(--surface2);
+    border-color: transparent;
+  }
+
+  .search-wrap input:focus { background: var(--surface); border-color: var(--pri); }
+
+  .filter-row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .filter-btn {
+    padding: 5px 14px;
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    background: var(--surface2);
+    color: var(--text2);
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+  }
+
+  .filter-btn.active {
+    background: var(--pri);
+    color: #fff;
+    border-color: var(--pri);
+  }
+
+  .filter-btn:not(.active):hover {
+    border-color: var(--pri);
+    color: var(--pri);
+  }
+
+  /* ── CHAMADO ITEM ── */
+  .lista-body { max-height: calc(100vh - 340px); overflow-y: auto; }
+  .lista-body::-webkit-scrollbar { width: 4px; }
+  .lista-body::-webkit-scrollbar-track { background: transparent; }
+  .lista-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .chamado-item {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: start;
+    transition: background 0.12s;
+    animation: slideIn 0.2s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .chamado-item:last-child { border-bottom: none; }
+  .chamado-item:hover { background: var(--surface2); }
+  .chamado-item.fechado { opacity: 0.55; }
+
+  .chamado-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--pri);
+    background: var(--pri-light);
+    padding: 3px 9px;
+    border-radius: 6px;
+    white-space: nowrap;
+    min-width: 58px;
+    text-align: center;
+    letter-spacing: 0.03em;
+  }
+
+  .chamado-body { min-width: 0; }
+
+  .chamado-local {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .chamado-local svg { width: 12px; height: 12px; stroke: var(--text3); flex-shrink: 0; }
+
+  .chamado-nome {
+    font-size: 12px;
+    color: var(--pri);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 3px;
+  }
+
+  .chamado-nome svg { width: 12px; height: 12px; stroke: var(--pri); flex-shrink: 0; }
+
+  .chamado-problema {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.45;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    margin-bottom: 6px;
+  }
+
+  .chamado-meta { display: flex; align-items: center; gap: 12px; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  .b-baixa { background: var(--baixa-bg); color: var(--baixa); }
+  .b-baixa .badge-dot { background: var(--baixa); }
+  .b-media { background: var(--media-bg); color: var(--media); }
+  .b-media .badge-dot { background: var(--media); }
+  .b-alta  { background: var(--alta-bg); color: var(--alta); }
+  .b-alta  .badge-dot { background: var(--alta); }
+
+  .chamado-time {
+    font-size: 11px;
+    color: var(--text3);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .chamado-time svg { width: 12px; height: 12px; stroke: var(--text3); }
+
+  .chamado-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  .status-pill {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .sp-aberto  { background: #E0F2FE; color: #0369A1; }
+  .sp-fechado { background: #F1F5F9; color: #475569; }
+
+  .action-buttons {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .btn-action {
+    padding: 4px 8px;
+    background: transparent;
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn-action:hover { background: var(--surface2); border-color: var(--pri); color: var(--pri); }
+  .btn-action.danger:hover { background: #FEE2E2; border-color: #FCA5A5; color: #991B1B; }
+
+  .lista-empty {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: var(--text3);
+  }
+
+  .empty-circle {
+    width: 60px; height: 60px;
+    background: var(--surface2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem;
+  }
+
+  .empty-circle svg { width: 30px; height: 30px; stroke: var(--border2); }
+
+  /* ── MODAL ── */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal.active { display: flex; }
+
+  .modal-content {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .modal-header {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text3);
+  }
+
+  .modal-body { margin-bottom: 1.5rem; }
+
+  .modal-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .btn-modal {
+    padding: 10px 16px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-modal-primary {
+    background: var(--pri);
+    color: #fff;
+  }
+
+  .btn-modal-primary:hover { background: var(--pri-dark); }
+
+  .btn-modal-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-modal-secondary:hover { border-color: var(--pri); }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #0F1629;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    z-index: 1001;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast svg { width: 18px; height: 18px; }
+  .toast-msg { font-size: 14px; font-weight: 500; }
+
+  footer {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text3);
+    border-top: 1px solid var(--border);
+  }
+
+  /* Responsive */
+  @media (max-width: 860px) {
+    main {
+      grid-template-columns: 1fr;
+    }
+    .stats-bar {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .lista-body {
+      max-height: none;
+    }
+  }
+
+  @media (max-width: 500px) {
+    .header-inner { padding: 0 1rem; }
+    main { padding: 1rem; gap: 1rem; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .stat-card { padding: 0.9rem 1rem; gap: 10px; }
+    .stat-num  { font-size: 20px; }
+    .chamado-item {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .chamado-actions {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo-sub { display: none; }
+    .header-info-box { display: none; }
+    .action-buttons { flex-direction: column; }
+    .btn-action { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="login-screen">
+  <div class="login-card">
+    <div class="login-logo-container">
+      <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663634196533/uDJUdyeNuuigAfVM.webp" alt="Logo Secretaria Municipal de Educação" class="login-logo-img">
+    </div>
+    <h1 class="login-title">Gerenciador de Chamados</h1>
+    <p class="login-subtitle">Acesse com seu usuário e senha</p>
+
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="trocarAbaLogin('entrar')">Entrar</button>
+      <button class="login-tab" onclick="trocarAbaLogin('cadastrar')">Criar conta</button>
+    </div>
+
+    <div id="login-error" class="login-error"></div>
+
+    <!-- FORMULÁRIO ENTRAR -->
+    <div id="form-entrar" class="login-form active">
+      <div class="form-group-login">
+        <label for="login-username">Usuário</label>
+        <input type="text" id="login-username" placeholder="Digite seu nome de usuário..." onkeydown="if(event.key==='Enter') document.getElementById('login-senha').focus()">
+      </div>
+      <div class="form-group-login">
+        <label for="login-senha">Senha</label>
+        <div class="pwd-wrap">
+          <input type="password" id="login-senha" placeholder="Digite sua senha..." onkeydown="if(event.key==='Enter') fazerLogin()">
+          <button type="button" class="pwd-toggle" onclick="toggleSenha('login-senha', this)" title="Mostrar/ocultar senha">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <button class="btn-login" onclick="fazerLogin()">Entrar</button>
+      <div class="login-divider">ou</div>
+      <button class="btn-criar-senha" onclick="trocarAbaLogin('cadastrar')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><rect x="3" y="9" width="14" height="10" rx="2"/><path d="M7 9V6a3 3 0 016 0v3"/></svg>
+        Criar nova conta
+      </button>
+      <button class="link-change-pwd" onclick="abrirTrocarSenha()" style="margin-top:8px;">🔑 Alterar minha senha</button>
+    </div>
+
+    <!-- FORMULÁRIO CADASTRAR -->
+    <div id="form-cadastrar" class="login-form">
+      <div class="form-group-login">
+        <label for="cad-username">Nome de usuário</label>
+        <input type="text" id="cad-username" placeholder="Escolha um nome de usuário...">
+      </div>
+      <div class="form-group-login">
+        <label for="cad-senha">Senha <span style="color:var(--text3);font-weight:400">(mín. 8 caracteres)</span></label>
+        <div class="pwd-wrap">
+          <input type="password" id="cad-senha" placeholder="Crie uma senha..." oninput="avaliarForcaCad()">
+          <button type="button" class="pwd-toggle" onclick="toggleSenha('cad-senha', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="pwd-strength-bar"><div class="pwd-strength-fill" id="cad-forca-fill"></div></div>
+        <div class="pwd-strength-text" id="cad-forca-texto"></div>
+      </div>
+      <div class="form-group-login">
+        <label for="cad-confirmar">Confirmar senha</label>
+        <div class="pwd-wrap">
+          <input type="password" id="cad-confirmar" placeholder="Repita a senha..." onkeydown="if(event.key==='Enter') cadastrarUsuario()">
+          <button type="button" class="pwd-toggle" onclick="toggleSenha('cad-confirmar', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label style="font-size:13px;font-weight:500;color:var(--text2);display:block;margin-bottom:6px;">Tipo de acesso</label>
+        <div class="tipo-pill-group">
+          <button class="tipo-pill active" id="pill-usuario" onclick="selecionarTipo('usuario')">👤 Usuário</button>
+          <button class="tipo-pill" id="pill-admin" onclick="selecionarTipo('admin')">🔐 Administrador</button>
+        </div>
+      </div>
+      <div id="cad-admin-wrap" class="form-group-login" style="display:none;">
+        <label for="cad-codigo-admin">Código de autorização (admin)</label>
+        <div class="pwd-wrap">
+          <input type="password" id="cad-codigo-admin" placeholder="Digite o código de autorização...">
+          <button type="button" class="pwd-toggle" onclick="toggleSenha('cad-codigo-admin', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <p style="font-size:11px;color:var(--text3);margin-top:4px;">⚠️ Necessário para criar conta de administrador.</p>
+      </div>
+      <button class="btn-login" onclick="cadastrarUsuario()">Criar conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ALTERAR SENHA -->
+<div class="modal" id="modal-criar-senha">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>Alterar Minha Senha</span>
+      <button class="modal-close" onclick="fecharModal('modal-criar-senha')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Usuário</label>
+        <input type="text" id="trocar-username" placeholder="Seu nome de usuário...">
+      </div>
+      <div class="form-group">
+        <label>Senha atual</label>
+        <div class="pwd-wrap">
+          <input type="password" id="trocar-atual" placeholder="Digite a senha atual...">
+          <button type="button" class="pwd-toggle" onclick="toggleSenha('trocar-atual', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Nova senha <span style="color:var(--text3);font-weight:400">(mínimo 8 caracteres)</span></label>
+        <div class="pwd-wrap">
+          <input type="password" id="criar-pwd-nova" placeholder="Digite a nova senha..." oninput="avaliarForcaCriar()">
+          <button type="button" class="pwd-toggle" onclick="toggleSenha('criar-pwd-nova', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="pwd-strength-bar"><div class="pwd-strength-fill" id="criar-forca-fill"></div></div>
+        <div class="pwd-strength-text" id="criar-forca-texto"></div>
+      </div>
+      <div class="form-group">
+        <label>Confirmar nova senha</label>
+        <div class="pwd-wrap">
+          <input type="password" id="criar-pwd-confirmar" placeholder="Repita a nova senha...">
+          <button type="button" class="pwd-toggle" onclick="toggleSenha('criar-pwd-confirmar', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="modal-criar-erro" class="login-error"></div>
+      <div id="modal-criar-ok" style="display:none;background:#DCFCE7;color:#166534;padding:10px;border-radius:var(--radius);font-size:13px;font-weight:500;">
+        ✅ Senha alterada com sucesso!
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal btn-modal-secondary" onclick="fecharModal('modal-criar-senha')">Cancelar</button>
+      <button class="btn-modal btn-modal-primary" onclick="confirmarTrocarSenha()">Salvar nova senha</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header id="header" style="display:none;">
+  <div class="header-inner">
+    <a class="logo" href="#">
+      <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663634196533/uDJUdyeNuuigAfVM.webp" alt="Logo Maracaju" class="header-logo-img">
+      <div>
+        <div class="logo-text">Gerenciador de Chamados</div>
+        <div class="logo-sub">Secretaria Municipal de Educação</div>
+      </div>
+    </a>
+    
+    <div class="header-right">
+      <div class="header-clock" id="relogio">00:00:00</div>
+      <div class="header-info-box">
+        <div class="header-date" id="data-hoje"></div>
+        <div class="header-weather" id="clima">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41M12 7a5 5 0 100 10 5 5 0 000-10z"/></svg>
+          <span id="clima-texto">Carregando clima...</span>
+        </div>
+      </div>
+      <div class="user-badge" id="user-badge">Usuário</div>
+      <button class="btn-logout" onclick="fazerLogout()">Sair</button>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main id="main" style="display:none;">
+
+  <!-- STATS (apenas admin) -->
+  <div class="stats-bar" id="stats-bar" style="display:none;">
+    <div class="stat-card">
+      <div class="stat-icon si-total">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 12h6M9 16h6M5 8h14M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-num sn-total" id="st-total">0</div>
+        <div class="stat-label">Total de chamados</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon si-baixa">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-num sn-baixa" id="st-baixa">0</div>
+        <div class="stat-label">Urgência baixa</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon si-media">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3l1.88 5.79H20l-4.94 3.59 1.88 5.79L12 14.58l-4.94 3.59 1.88-5.79L4 8.79h6.12z"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-num sn-media" id="st-media">0</div>
+        <div class="stat-label">Urgência média</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon si-alta">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-num sn-alta" id="st-alta">0</div>
+        <div class="stat-label">Urgência alta</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORMULÁRIO (usuário e admin) -->
+  <aside id="form-panel">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <div class="panel-dot"></div>
+          <span class="panel-title">Abrir novo chamado</span>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="form-group">
+          <label for="nome-solicitante">Nome <span class="req">*</span></label>
+          <input type="text" id="nome-solicitante" placeholder="Digite seu nome completo...">
+        </div>
+        <div class="form-group">
+          <label for="local">Local <span class="req">*</span></label>
+          <select id="local" onchange="atualizarPrevia()">
+            <option value="">Selecione a unidade...</option>
+            <optgroup label="CIEIs">
+              <option value="CIEI GREGÓRIA MARTINS">CIEI GREGÓRIA MARTINS</option>
+              <option value="CIEI NOSSA SENHORA AUXILIADORA">CIEI NOSSA SENHORA AUXILIADORA</option>
+              <option value="CIEI SÃO BENEDITO">CIEI SÃO BENEDITO</option>
+              <option value="CIEI MARIA DALPHINA REZENDE DE CASTRO">CIEI MARIA DALPHINA REZENDE DE CASTRO</option>
+              <option value="CIEI WALTRUDES FERREIRA MUZZI">CIEI WALTRUDES FERREIRA MUZZI</option>
+              <option value="CIEI JOANA SAYD">CIEI JOANA SAYD</option>
+            </optgroup>
+            <optgroup label="Secretaria">
+              <option value="SECRETARIA DE EDUCAÇÃO">SECRETARIA DE EDUCAÇÃO</option>
+            </optgroup>
+            <optgroup label="Escolas Municipais">
+              <option value="Escola Municipal João Pedro Fernandes">Escola Municipal João Pedro Fernandes</option>
+              <option value="Escola Municipal Profª Irma De Lima Matos">Escola Municipal Profª Irma De Lima Matos</option>
+              <option value="Escola Municipal Profª Cecília de Castro Minervini">Escola Municipal Profª Cecília de Castro Minervini</option>
+              <option value="Escola Municipal Maurícia Paré Gomes">Escola Municipal Maurícia Paré Gomes</option>
+              <option value="Escola Muninicipal João Batista Lino Braga">Escola Muninicipal João Batista Lino Braga</option>
+              <option value="Escola Municipal Júlio Müller">Escola Municipal Júlio Müller</option>
+              <option value="Escola Municipal Ciro Aniz">Escola Municipal Ciro Aniz</option>
+              <option value="Escola José Pereira Da Rosa">Escola José Pereira Da Rosa</option>
+            </optgroup>
+            <option value="Outro">Outro local...</option>
+          </select>
+          
+          <div id="local-custom-wrap" style="display:none; margin-top:10px;">
+            <input type="text" id="local-custom" placeholder="Digite o nome do local...">
+          </div>
+
+          <div id="previa" class="local-preview">
+            <div class="preview-title">Informações da Unidade</div>
+            <div class="preview-item"><b>Região:</b> <span id="previa-regiao">-</span></div>
+            <div class="preview-item"><b>Endereço:</b> <span id="previa-endereco">-</span></div>
+            <div class="preview-item"><b>Telefone:</b> <span id="previa-telefone">-</span></div>
+            <div class="preview-item" id="previa-email-wrap" style="display:none;"><b>E-mail:</b> <span id="previa-email">-</span></div>
+            <div class="preview-item" id="previa-horario-wrap" style="display:none;"><b>Horário:</b> <span id="previa-horario">-</span></div>
+            <div class="preview-item" id="previa-responsavel-wrap" style="display:none;"><b>Responsável:</b> <span id="previa-responsavel">-</span></div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="urgencia">Urgência <span class="req">*</span></label>
+          <select id="urgencia">
+            <option value="">Selecione o nível...</option>
+            <option value="baixa">🟢 Baixa — Pode aguardar</option>
+            <option value="media">🟡 Média — Atenção necessária</option>
+            <option value="alta">🔴 Alta — Atendimento imediato</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="problema">Problema <span class="req">*</span></label>
+          <textarea id="problema" placeholder="Descreva o problema detalhadamente..."></textarea>
+        </div>
+        <button class="btn-primary" onclick="criarChamado()">
+          <svg viewBox="0 0 20 20" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="10" cy="10" r="8"/><path d="M10 6v8M6 10h8"/>
+          </svg>
+          Abrir chamado
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- LISTA (apenas admin) -->
+  <section id="lista-panel" style="display:none;">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <div class="panel-dot"></div>
+          <span class="panel-title">Lista de chamados</span>
+        </div>
+        <div class="panel-actions">
+          <button class="btn-export" onclick="exportarExcel()">📊 Excel</button>
+          <button class="btn-export" onclick="exportarWord()">📄 Word</button>
+          <button class="btn-export" onclick="exportarPDF()">📋 PDF</button>
+        </div>
+      </div>
+      <div class="list-controls">
+        <div class="search-wrap">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3 3"/>
+          </svg>
+          <input type="text" id="busca" placeholder="Buscar por local ou problema..." oninput="renderLista()">
+        </div>
+        <div class="filter-row">
+          <button class="filter-btn active" data-filter="todos"  onclick="setFiltro(this)">Todos</button>
+          <button class="filter-btn" data-filter="aberto"        onclick="setFiltro(this)">Abertos</button>
+          <button class="filter-btn" data-filter="fechado"       onclick="setFiltro(this)">Fechados</button>
+          <button class="filter-btn" data-filter="alta"          onclick="setFiltro(this)">Alta urgência</button>
+        </div>
+      </div>
+      <div class="lista-body" id="lista"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer id="footer" style="display:none;">
+  Sistema de Gerenciamento de Chamados &mdash; <span id="ano"></span>
+</footer>
+
+<!-- MODAL EDITAR -->
+<div class="modal" id="modal-editar">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>Editar Chamado</span>
+      <button class="modal-close" onclick="fecharModal('modal-editar')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Local</label>
+        <input type="text" id="edit-local" readonly>
+      </div>
+      <div class="form-group">
+        <label for="edit-urgencia">Urgência</label>
+        <select id="edit-urgencia">
+          <option value="baixa">🟢 Baixa</option>
+          <option value="media">🟡 Média</option>
+          <option value="alta">🔴 Alta</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="edit-problema">Problema</label>
+        <textarea id="edit-problema"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal btn-modal-secondary" onclick="fecharModal('modal-editar')">Cancelar</button>
+      <button class="btn-modal btn-modal-primary" onclick="salvarEdicao()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="8" cy="8" r="6"/><path d="M5.5 8l2 2 3-3"/>
+  </svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://sjcvmxlnzogshbwhqpnp.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqY3ZteGxuem9nc2hid2hxcG5wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5OTk3NzgsImV4cCI6MjA5MzU3NTc3OH0.VNU0kR-2CZobZU4WZo0oLPsPNOU5o_KHXc6fcOIMZL8';
+  const CODIGO_ADMIN = 'admin2025'; // Altere este código secreto!
+
+  const sb = {
+    async req(method, path, body) {
+      const r = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+        method,
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
+        },
+        body: body ? JSON.stringify(body) : undefined
+      });
+      if (!r.ok) {
+        let e = {};
+        try { e = await r.json(); } catch(_) {}
+        throw new Error(e.message || e.error_description || ('HTTP ' + r.status));
+      }
+      const txt = await r.text();
+      return txt ? JSON.parse(txt) : null;
+    },
+    get(path)        { return this.req('GET',    path); },
+    post(path, body) { return this.req('POST',   path, body); },
+    patch(path, body){ return this.req('PATCH',  path, body); },
+    delete_(path)    { return this.req('DELETE', path); },
+  };
+
+  const DADOS_LOCAIS = {
+    "CIEI GREGÓRIA MARTINS":{ regiao:"Conjunto Geazone / Vila Juquita",endereco:"Rua Guilhermino Pereira dos Santos, s/nº",telefone:"(67) 3454-4566"},
+    "CIEI NOSSA SENHORA AUXILIADORA":{ regiao:"Bairro Paraguai",endereco:"Rua Joaquim Murtinho, s/nº",telefone:"(67) 3454-7272"},
+    "CIEI SÃO BENEDITO":{ regiao:"Conjunto Floripes / Cambaraí",endereco:"Rua Antônio de Souza Marcondes, 3531",telefone:"(67) 3454-3989"},
+    "CIEI MARIA DALPHINA REZENDE DE CASTRO":{ regiao:"Vila Juquita / Centro",endereco:"Travessa Coronel Lima de Figueiredo, 41",telefone:"(67) 3454-6225"},
+    "CIEI WALTRUDES FERREIRA MUZZI":{ regiao:"Conjunto Egídio Ribeiro",endereco:"Rua do Progresso, 360",telefone:"(67) 3454-6154"},
+    "CIEI JOANA SAYD":{ regiao:"Distrito de Vista Alegre",endereco:"Rua Azarias Alves Pereira, s/nº",telefone:"(67) 3405-1490"},
+    "Escola Municipal João Pedro Fernandes":{ regiao:"Centro",endereco:"Centro, Maracaju - MS",telefone:"Não informado"},
+    "Escola Municipal Profª Irma De Lima Matos":{ regiao:"BNH João Brejão",endereco:"Rua Anízio Azambuja, 2",telefone:"Não informado"},
+    "Escola Municipal Profª Cecília de Castro Minervini":{ regiao:"Vila Juquita",endereco:"Rua dos Pereiras",telefone:"Não informado"},
+    "Escola Municipal Maurícia Paré Gomes":{ regiao:"Vila Adrien",endereco:"Rua Vacaria, 120-178",telefone:"Não informado"},
+    "Escola Muninicipal João Batista Lino Braga":{ regiao:"Alto Maracaju",endereco:"Rua Deputado Emanoel Pinheiro, s/nº",telefone:"Não informado"},
+    "Escola Municipal Júlio Müller":{ regiao:"Distrito de Vista Alegre",endereco:"Rua Azarias Alves Pereira, s/nº",telefone:"Não informado"},
+    "Escola Municipal Ciro Aniz":{ regiao:"Distrito Vista Alegre",endereco:"Avenida Coronel Francisco Alves",telefone:"Não informado"},
+    "Escola José Pereira Da Rosa":{ regiao:"Ivan Loureiro",endereco:"Rua Osvaldo Cardoso",telefone:"Não informado"},
+    "SECRETARIA DE EDUCAÇÃO":{ regiao:"Centro", endereco:"Av. João Pedro Fernandes, 115 – Centro, Maracaju – MS – CEP 79150-027", telefone:"(67) 3454-1982 / (67) 3454-3046", email:"educacao.secretario@maracaju.ms.gov.br", horario:"Seg. a Sex. 07h–11h e 13h–17h", responsavel:"Silvana Pádua de Oliveira Perosa"}
+  };
+
+  let chamados = [], filtroAtivo = 'todos', usuarioAtual = null, chamadoEmEdicao = null, tipoCadastro = 'usuario';
+  const SVG_EYE_OPEN   = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+  const SVG_EYE_CLOSED = `<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+
+  function hashSenha(s) { return CryptoJS.SHA256(s).toString(); }
+
+  window.onload = function() {
+    atualizarRelogio(); setInterval(atualizarRelogio, 1000);
+    buscarClima(); setInterval(buscarClima, 600000);
+    const n = new Date();
+    document.getElementById('data-hoje').textContent = n.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+    document.getElementById('ano').textContent = n.getFullYear();
+  };
+
+  function trocarAbaLogin(tipo) {
+    document.querySelectorAll('.login-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.login-form').forEach(f=>f.classList.remove('active'));
+    const tabs = document.querySelectorAll('.login-tab');
+    if (tipo === 'entrar') tabs[0].classList.add('active'); else tabs[1].classList.add('active');
+    document.getElementById('form-'+tipo).classList.add('active');
+    document.getElementById('login-error').classList.remove('show');
+  }
+
+  function selecionarTipo(tipo) {
+    tipoCadastro = tipo;
+    document.querySelectorAll('.tipo-pill').forEach(p=>p.classList.remove('active'));
+    document.getElementById('pill-'+tipo).classList.add('active');
+    document.getElementById('cad-admin-wrap').style.display = tipo==='admin' ? 'block' : 'none';
+  }
+
+  function toggleSenha(inputId, btn) {
+    const input = document.getElementById(inputId), svg = btn.querySelector('svg');
+    if (input.type==='password') { input.type='text'; svg.innerHTML=SVG_EYE_CLOSED; }
+    else { input.type='password'; svg.innerHTML=SVG_EYE_OPEN; }
+  }
+
+  async function cadastrarUsuario() {
+    const errorDiv = document.getElementById('login-error');
+    const err = msg => { errorDiv.textContent=msg; errorDiv.classList.add('show'); };
+    errorDiv.classList.remove('show');
+    const username = document.getElementById('cad-username').value.trim().toLowerCase();
+    const senha    = document.getElementById('cad-senha').value;
+    const confirma = document.getElementById('cad-confirmar').value;
+    const tipo     = tipoCadastro;
+    if (!username)                   return err('❌ Digite um nome de usuário.');
+    if (username.length < 3)         return err('❌ O usuário deve ter no mínimo 3 caracteres.');
+    if (!/^[a-z0-9._]+$/.test(username)) return err('❌ Use apenas letras, números, ponto ou underline.');
+    if (!senha || !confirma)         return err('❌ Preencha todos os campos de senha.');
+    if (senha.length < 8)            return err('❌ A senha deve ter no mínimo 8 caracteres.');
+    if (senha !== confirma)          return err('❌ As senhas não coincidem.');
+    if (tipo === 'admin') {
+      const codigo = document.getElementById('cad-codigo-admin').value;
+      if (codigo !== CODIGO_ADMIN)   return err('❌ Código de autorização incorreto.');
+    }
+    try {
+      const existentes = await sb.get('usuarios?username=eq.'+encodeURIComponent(username)+'&select=id');
+      if (existentes && existentes.length > 0) return err('❌ Este nome de usuário já está em uso. Escolha outro.');
+      await sb.post('usuarios', { username, senha_hash: hashSenha(senha), tipo });
+      showToast('✅ Conta criada! Faça login com seu usuário.');
+      ['cad-username','cad-senha','cad-confirmar','cad-codigo-admin'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+      document.getElementById('login-username').value = username;
+      trocarAbaLogin('entrar');
+    } catch(e) {
+      const msg = e.message || '';
+      if (msg.toLowerCase().includes('row-level security') || msg.toLowerCase().includes('violates') || msg.toLowerCase().includes('policy')) {
+        err('❌ Erro de permissão no banco de dados (RLS). Acesse o SQL Editor do Supabase e execute:\n' +
+            'CREATE POLICY "insert_anon" ON usuarios FOR INSERT TO anon WITH CHECK (true);\n' +
+            'CREATE POLICY "select_anon" ON usuarios FOR SELECT TO anon USING (true);\n' +
+            'CREATE POLICY "update_anon" ON usuarios FOR UPDATE TO anon USING (true);');
+      } else {
+        err('❌ Erro ao criar conta: ' + msg);
+      }
+    }
+  }
+
+  async function fazerLogin() {
+    const errorDiv = document.getElementById('login-error');
+    const err = msg => { errorDiv.textContent=msg; errorDiv.classList.add('show'); };
+    errorDiv.classList.remove('show');
+    const username = document.getElementById('login-username').value.trim().toLowerCase();
+    const senha    = document.getElementById('login-senha').value;
+    if (!username || !senha) return err('❌ Preencha usuário e senha.');
+    try {
+      const rows = await sb.get('usuarios?username=eq.'+encodeURIComponent(username)+'&select=id,username,tipo,senha_hash');
+      if (!rows || rows.length===0)           return err('❌ Usuário não encontrado.');
+      const user = rows[0];
+      if (hashSenha(senha) !== user.senha_hash) return err('❌ Senha incorreta. Tente novamente.');
+      usuarioAtual = { id: user.id, username: user.username, tipo: user.tipo };
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('header').style.display = 'block';
+      document.getElementById('main').style.display   = 'grid';
+      document.getElementById('footer').style.display = 'block';
+      document.getElementById('user-badge').textContent = user.tipo==='admin'
+        ? '🔐 '+user.username+' (Admin)' : '👤 '+user.username;
+      if (user.tipo==='admin') {
+        document.getElementById('main').classList.add('admin-view');
+        document.getElementById('stats-bar').style.display  = 'grid';
+        document.getElementById('lista-panel').style.display = 'block';
+      } else {
+        document.getElementById('main').classList.remove('admin-view');
+        document.getElementById('stats-bar').style.display  = 'none';
+        document.getElementById('lista-panel').style.display = 'none';
+      }
+      await carregarChamados();
+    } catch(e) { err('❌ Erro ao conectar: '+e.message); }
+  }
+
+  function fazerLogout() {
+    usuarioAtual=null; chamados=[];
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('header').style.display='none';
+    document.getElementById('main').style.display='none';
+    document.getElementById('footer').style.display='none';
+    ['login-username','login-senha','local','urgencia','problema'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('previa').classList.remove('active');
+    document.getElementById('login-error').classList.remove('show');
+    trocarAbaLogin('entrar');
+  }
+
+  function abrirTrocarSenha() {
+    ['trocar-username','trocar-atual','criar-pwd-nova','criar-pwd-confirmar'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('criar-forca-fill').style.width='0%';
+    document.getElementById('criar-forca-texto').textContent='';
+    const err=document.getElementById('modal-criar-erro'); err.textContent=''; err.style.display='none';
+    document.getElementById('modal-criar-ok').style.display='none';
+    if (usuarioAtual) document.getElementById('trocar-username').value=usuarioAtual.username;
+    abrirModal('modal-criar-senha');
+  }
+
+  async function confirmarTrocarSenha() {
+    const errel=document.getElementById('modal-criar-erro');
+    const err=msg=>{errel.textContent=msg;errel.style.display='block';};
+    errel.style.display='none'; document.getElementById('modal-criar-ok').style.display='none';
+    const username = document.getElementById('trocar-username').value.trim().toLowerCase();
+    const atual    = document.getElementById('trocar-atual').value;
+    const nova     = document.getElementById('criar-pwd-nova').value;
+    const confirma = document.getElementById('criar-pwd-confirmar').value;
+    if (!username||!atual||!nova||!confirma) return err('❌ Preencha todos os campos.');
+    if (nova.length<8)   return err('❌ A nova senha deve ter no mínimo 8 caracteres.');
+    if (nova!==confirma) return err('❌ As senhas não coincidem.');
+    try {
+      const rows = await sb.get('usuarios?username=eq.'+encodeURIComponent(username)+'&select=id,senha_hash');
+      if (!rows||rows.length===0) return err('❌ Usuário não encontrado.');
+      if (hashSenha(atual)!==rows[0].senha_hash) return err('❌ Senha atual incorreta.');
+      await sb.patch('usuarios?id=eq.'+rows[0].id, {senha_hash:hashSenha(nova)});
+      document.getElementById('modal-criar-ok').style.display='block';
+      setTimeout(()=>{ fecharModal('modal-criar-senha'); showToast('✅ Senha alterada com sucesso!'); }, 1800);
+    } catch(e) { err('❌ Erro ao salvar: '+e.message); }
+  }
+
+  function avaliarForcaCad() { _avaliarForca('cad-senha','cad-forca-fill','cad-forca-texto'); }
+  function avaliarForcaCriar(){ _avaliarForca('criar-pwd-nova','criar-forca-fill','criar-forca-texto'); }
+  function _avaliarForca(inputId, fillId, txtId) {
+    const val=document.getElementById(inputId).value;
+    const fill=document.getElementById(fillId), txt=document.getElementById(txtId);
+    let s=0;
+    if(val.length>=8) s++; if(val.length>=12) s++; if(/[A-Z]/.test(val)) s++;
+    if(/[0-9]/.test(val)) s++; if(/[^A-Za-z0-9]/.test(val)) s++;
+    const n=[{pct:'0%',cor:'transparent',t:''},{pct:'25%',cor:'#EF4444',t:'🔴 Muito fraca'},
+      {pct:'50%',cor:'#F97316',t:'🟠 Fraca'},{pct:'70%',cor:'#EAB308',t:'🟡 Média'},
+      {pct:'88%',cor:'#22C55E',t:'🟢 Forte'},{pct:'100%',cor:'#15803D',t:'✅ Muito forte'}][s]||{pct:'0%',cor:'transparent',t:''};
+    fill.style.width=n.pct; fill.style.background=n.cor; txt.textContent=n.t; txt.style.color=n.cor;
+  }
+
+  async function carregarChamados() {
+    try {
+      if(usuarioAtual.tipo==='admin') document.getElementById('lista').innerHTML='<div class="lista-empty"><p>⏳ Carregando chamados…</p></div>';
+      const query = usuarioAtual.tipo==='admin'
+        ? 'chamados?select=*&order=criado_em.desc'
+        : 'chamados?select=*&usuario_id=eq.'+usuarioAtual.id+'&order=criado_em.desc';
+      const rows = await sb.get(query);
+      chamados = rows.map(r=>({
+        id:r.id, local:r.local, urgencia:r.urgencia, problema:r.problema,
+        nome_solicitante:r.nome_solicitante||'',
+        status:r.status, usuario_id:r.usuario_id,
+        data:new Date(r.criado_em).toLocaleDateString('pt-BR'),
+        hora:new Date(r.criado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+        criado_em:r.criado_em
+      }));
+      if(usuarioAtual.tipo==='admin') { atualizarStats(); renderLista(); }
+    } catch(e) { showToast('Erro ao carregar chamados: '+e.message,true); }
+  }
+
+  async function criarChamado() {
+    const nome=document.getElementById('nome-solicitante').value.trim();
+    if(!nome) { showToast('Preencha o campo Nome.',true); return; }
+    let local=document.getElementById('local').value;
+    if(local==='Outro') { local=document.getElementById('local-custom').value.trim(); }
+    else if(!local) { showToast('Selecione um local.',true); return; }
+    const urgencia=document.getElementById('urgencia').value;
+    const problema=document.getElementById('problema').value.trim();
+    if(!local||!urgencia||!problema) { showToast('Preencha todos os campos obrigatórios.',true); return; }
+    try {
+      const [novo]=await sb.post('chamados',{nome_solicitante:nome,local,urgencia,problema,status:'aberto',usuario_id:usuarioAtual.id});
+      chamados.unshift({
+        id:novo.id,local:novo.local,urgencia:novo.urgencia,problema:novo.problema,
+        nome_solicitante:novo.nome_solicitante||nome,
+        status:novo.status,usuario_id:novo.usuario_id,
+        data:new Date(novo.criado_em).toLocaleDateString('pt-BR'),
+        hora:new Date(novo.criado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+        criado_em:novo.criado_em
+      });
+      ['local','urgencia','problema'].forEach(id=>document.getElementById(id).value='');
+      document.getElementById('nome-solicitante').value='';
+      document.getElementById('local-custom').value='';
+      document.getElementById('local-custom-wrap').style.display='none';
+      document.getElementById('previa').classList.remove('active');
+      if(usuarioAtual.tipo==='admin') { atualizarStats(); renderLista(); }
+      showToast('Chamado #'+String(novo.id).padStart(4,'0')+' aberto com sucesso!');
+    } catch(e) { showToast('Erro ao criar chamado: '+e.message,true); }
+  }
+
+  function abrirEdicao(id) {
+    const c=chamados.find(x=>x.id===id); if(!c) return;
+    chamadoEmEdicao=id;
+    document.getElementById('edit-local').value=c.local;
+    document.getElementById('edit-urgencia').value=c.urgencia;
+    document.getElementById('edit-problema').value=c.problema;
+    abrirModal('modal-editar');
+  }
+
+  async function salvarEdicao() {
+    const urgencia=document.getElementById('edit-urgencia').value;
+    const problema=document.getElementById('edit-problema').value;
+    try {
+      await sb.patch('chamados?id=eq.'+chamadoEmEdicao,{urgencia,problema});
+      const c=chamados.find(x=>x.id===chamadoEmEdicao);
+      if(c){c.urgencia=urgencia;c.problema=problema;}
+      fecharModal('modal-editar'); atualizarStats(); renderLista();
+      showToast('Chamado #'+String(chamadoEmEdicao).padStart(4,'0')+' atualizado.');
+      chamadoEmEdicao=null;
+    } catch(e) { showToast('Erro ao salvar: '+e.message,true); }
+  }
+
+  async function fecharChamado(id) {
+    try {
+      await sb.patch('chamados?id=eq.'+id,{status:'fechado'});
+      const c=chamados.find(x=>x.id===id); if(c) c.status='fechado';
+      atualizarStats(); renderLista();
+      showToast('Chamado #'+String(id).padStart(4,'0')+' encerrado.');
+    } catch(e) { showToast('Erro: '+e.message,true); }
+  }
+
+  async function reabrirChamado(id) {
+    try {
+      await sb.patch('chamados?id=eq.'+id,{status:'aberto'});
+      const c=chamados.find(x=>x.id===id); if(c) c.status='aberto';
+      atualizarStats(); renderLista();
+      showToast('Chamado #'+String(id).padStart(4,'0')+' reaberto.');
+    } catch(e) { showToast('Erro: '+e.message,true); }
+  }
+
+  async function excluirChamado(id) {
+    if(!confirm('Tem certeza que deseja excluir este chamado?')) return;
+    try {
+      await sb.delete_('chamados?id=eq.'+id);
+      chamados=chamados.filter(c=>c.id!==id);
+      atualizarStats(); renderLista();
+      showToast('Chamado #'+String(id).padStart(4,'0')+' excluído.');
+    } catch(e) { showToast('Erro ao excluir: '+e.message,true); }
+  }
+
+  function setFiltro(btn) {
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); filtroAtivo=btn.dataset.filter; renderLista();
+  }
+
+  function atualizarStats() {
+    document.getElementById('st-total').textContent=chamados.length;
+    document.getElementById('st-baixa').textContent=chamados.filter(c=>c.urgencia==='baixa').length;
+    document.getElementById('st-media').textContent=chamados.filter(c=>c.urgencia==='media').length;
+    document.getElementById('st-alta').textContent =chamados.filter(c=>c.urgencia==='alta').length;
+  }
+
+  function renderLista() {
+    const lista=document.getElementById('lista');
+    const busca=document.getElementById('busca').value.toLowerCase();
+    let filtrados=chamados.filter(c=>{
+      if(filtroAtivo==='aberto')  return c.status==='aberto';
+      if(filtroAtivo==='fechado') return c.status==='fechado';
+      if(filtroAtivo==='alta')    return c.urgencia==='alta'&&c.status==='aberto';
+      return true;
+    }).filter(c=>!busca||c.local.toLowerCase().includes(busca)||c.problema.toLowerCase().includes(busca)||(c.nome_solicitante||'').toLowerCase().includes(busca));
+    if(filtrados.length===0){
+      lista.innerHTML=`<div class="lista-empty"><div class="empty-circle"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6M9 16h6M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z"/></svg></div><p>Nenhum chamado encontrado.</p></div>`;
+      return;
+    }
+    const urgLabels={baixa:'Baixa',media:'Média',alta:'Alta'};
+    lista.innerHTML=filtrados.map(c=>`
+      <div class="chamado-item ${c.status==='fechado'?'fechado':''}">
+        <div><div class="chamado-num">#${String(c.id).padStart(4,'0')}</div></div>
+        <div class="chamado-body">
+          <div class="chamado-local">
+            <svg viewBox="0 0 16 16" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9a3 3 0 100-6 3 3 0 000 6z"/><path d="M8 14s5-4.5 5-8a5 5 0 00-10 0c0 3.5 5 8 5 8z"/></svg>
+            ${escHtml(c.local)}
+          </div>
+          ${c.nome_solicitante?`<div class="chamado-nome"><svg viewBox="0 0 16 16" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="5" r="2.5"/><path d="M2 13c0-3.3 2.7-5 6-5s6 1.7 6 5"/></svg>${escHtml(c.nome_solicitante)}</div>`:''}
+          <div class="chamado-problema">${escHtml(c.problema)}</div>
+          <div class="chamado-meta">
+            <span class="badge b-${c.urgencia}"><span class="badge-dot"></span>${urgLabels[c.urgencia]}</span>
+            <span class="chamado-time">
+              <svg viewBox="0 0 16 16" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+              ${c.data} às ${c.hora}
+            </span>
+          </div>
+        </div>
+        <div class="chamado-actions">
+          <span class="status-pill sp-${c.status}">${c.status==='aberto'?'Aberto':'Fechado'}</span>
+          <div class="action-buttons">
+            ${c.status==='aberto'?`<button class="btn-action" onclick="abrirEdicao(${c.id})">Editar</button>`:''}
+            ${c.status==='aberto'?`<button class="btn-action" onclick="fecharChamado(${c.id})">Fechar</button>`:`<button class="btn-action" onclick="reabrirChamado(${c.id})">Reabrir</button>`}
+            <button class="btn-action danger" onclick="excluirChamado(${c.id})">Excluir</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  function atualizarPrevia() {
+    const local=document.getElementById('local').value;
+    const previa=document.getElementById('previa');
+    const customWrap=document.getElementById('local-custom-wrap');
+    if(local==='Outro'){ customWrap.style.display='block'; previa.classList.remove('active'); }
+    else if(DADOS_LOCAIS[local]){
+      customWrap.style.display='none';
+      const info=DADOS_LOCAIS[local];
+      document.getElementById('previa-regiao').textContent=info.regiao;
+      document.getElementById('previa-endereco').textContent=info.endereco;
+      document.getElementById('previa-telefone').textContent=info.telefone;
+      const emailEl=document.getElementById('previa-email-wrap');
+      const horarioEl=document.getElementById('previa-horario-wrap');
+      const respEl=document.getElementById('previa-responsavel-wrap');
+      if(info.email){ document.getElementById('previa-email').textContent=info.email; emailEl.style.display='flex'; } else { emailEl.style.display='none'; }
+      if(info.horario){ document.getElementById('previa-horario').textContent=info.horario; horarioEl.style.display='flex'; } else { horarioEl.style.display='none'; }
+      if(info.responsavel){ document.getElementById('previa-responsavel').textContent=info.responsavel; respEl.style.display='flex'; } else { respEl.style.display='none'; }
+      previa.classList.add('active');
+    } else { customWrap.style.display='none'; previa.classList.remove('active'); }
+  }
+
+  function getDadosFiltrados() {
+    const busca=document.getElementById('busca').value.toLowerCase();
+    return chamados.filter(c=>{
+      if(filtroAtivo==='aberto')  return c.status==='aberto';
+      if(filtroAtivo==='fechado') return c.status==='fechado';
+      if(filtroAtivo==='alta')    return c.urgencia==='alta'&&c.status==='aberto';
+      return true;
+    }).filter(c=>!busca||c.local.toLowerCase().includes(busca)||c.problema.toLowerCase().includes(busca)||(c.nome_solicitante||'').toLowerCase().includes(busca));
+  }
+
+  function exportarExcel() {
+    try {
+      const filtrados = getDadosFiltrados();
+      if (filtrados.length === 0) return showToast('Não há dados para exportar com o filtro atual.', true);
+      
+      const dados=filtrados.map(c=>({
+        'ID':'#'+String(c.id).padStart(4,'0'),
+        'Nome':c.nome_solicitante||'',
+        'Local':c.local,
+        'Problema':c.problema,
+        'Urgência':c.urgencia.charAt(0).toUpperCase()+c.urgencia.slice(1),
+        'Status':c.status.charAt(0).toUpperCase()+c.status.slice(1),
+        'Data':c.data,
+        'Hora':c.hora
+      }));
+      const ws=XLSX.utils.json_to_sheet(dados), wb=XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb,ws,"Chamados"); 
+      XLSX.writeFile(wb, `chamados_${filtroAtivo}.xlsx`);
+      showToast(`Excel (${filtroAtivo}) exportado com sucesso!`);
+    } catch (e) {
+      console.error(e);
+      showToast('Erro ao exportar Excel: ' + e.message, true);
+    }
+  }
+
+  function exportarWord() {
+    try {
+      const filtrados = getDadosFiltrados();
+      if (filtrados.length === 0) return showToast('Não há dados para exportar com o filtro atual.', true);
+
+      // Estratégia Nativa: Gerar arquivo Word via formato HTML compatível (MHTML/Office XML)
+      // Isso garante que funcione sem depender de nenhuma biblioteca externa
+      const header = ['ID', 'Nome', 'Local', 'Problema', 'Urgência', 'Status', 'Data', 'Hora'];
+      
+      let html = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+          <meta charset='utf-8'>
+          <title>Relatório de Chamados</title>
+          <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; }
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; font-size: 10pt; }
+            th { background-color: #004691; color: white; font-weight: bold; }
+            h1 { color: #004691; font-size: 18pt; margin-bottom: 5pt; }
+            h2 { color: #64748b; font-size: 12pt; margin-bottom: 15pt; }
+            .footer { font-size: 8pt; color: #94a3b8; margin-top: 20pt; }
+          </style>
+        </head>
+        <body>
+          <h1>Relatório de Chamados</h1>
+          <h2>Filtro: ${filtroAtivo.toUpperCase()} | Total: ${filtrados.length} chamados</h2>
+          <p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+          <table>
+            <thead>
+              <tr>${header.map(h => `<th>${h}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+              ${filtrados.map(c => `
+                <tr>
+                  <td>#${String(c.id).padStart(4, '0')}</td>
+                  <td>${escHtml(c.nome_solicitante||'')}</td>
+                  <td>${escHtml(c.local)}</td>
+                  <td>${escHtml(c.problema)}</td>
+                  <td>${c.urgencia.charAt(0).toUpperCase() + c.urgencia.slice(1)}</td>
+                  <td>${c.status.charAt(0).toUpperCase() + c.status.slice(1)}</td>
+                  <td>${c.data}</td>
+                  <td>${c.hora}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <p class="footer">Gerenciador de Chamados - Secretaria Municipal de Educação - Maracaju</p>
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `chamados_${filtroAtivo}.doc`; // Extensão .doc é mais compatível com esse método nativo
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showToast(`Word (${filtroAtivo}) exportado com sucesso!`);
+    } catch (e) {
+      console.error(e);
+      showToast('Erro na exportação Word: ' + e.message, true);
+    }
+  }
+
+  function exportarPDF() {
+    const filtrados = getDadosFiltrados();
+    if (filtrados.length === 0) return showToast('Não há dados para exportar com o filtro atual.', true);
+
+    const {jsPDF}=window.jspdf, doc=new jsPDF('l', 'mm', 'a4'); // Paisagem para caber mais dados
+    doc.setFontSize(18); doc.text('Relatório de Chamados',14,15);
+    doc.setFontSize(11); doc.text(`Filtro ativo: ${filtroAtivo.toUpperCase()} | Total: ${filtrados.length}`,14,22);
+    doc.setFontSize(10); doc.text(`Secretaria Municipal de Educação - Maracaju`,14,28);
+    
+    doc.autoTable({
+      head:[['ID','Nome','Local','Problema','Urgência','Status','Data','Hora']],
+      body:filtrados.map(c=>[
+        '#'+String(c.id).padStart(4,'0'),
+        c.nome_solicitante||'',
+        c.local,
+        c.problema,
+        c.urgencia.charAt(0).toUpperCase()+c.urgencia.slice(1),
+        c.status.charAt(0).toUpperCase()+c.status.slice(1),
+        c.data,
+        c.hora
+      ]),
+      startY:35,
+      theme: 'grid',
+      headStyles: { fillColor: [0, 70, 145] } // Azul Maracaju
+    });
+    
+    doc.save(`chamados_${filtroAtivo}.pdf`); 
+    showToast(`PDF (${filtroAtivo}) exportado com sucesso!`);
+  }
+
+  function abrirModal(id)  { document.getElementById(id).classList.add('active'); }
+  function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
+  function escHtml(str)    { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function atualizarRelogio() {
+    const n=new Date();
+    document.getElementById('relogio').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
+  }
+
+  async function buscarClima() {
+    try {
+      const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=-21.6144&longitude=-55.1683&current_weather=true');
+      const d=await r.json();
+      if(d?.current_weather){
+        const temp=Math.round(d.current_weather.temperature), code=d.current_weather.weathercode;
+        let desc='Limpo';
+        if(code>=1&&code<=3) desc='Parcial. Nublado';
+        else if(code>=45&&code<=48) desc='Nevoeiro';
+        else if(code>=51&&code<=67) desc='Chuva Leve';
+        else if(code>=71&&code<=82) desc='Chuva';
+        else if(code>=95) desc='Tempestade';
+        document.getElementById('clima-texto').textContent=`${temp}°C • ${desc}`;
+      }
+    } catch { document.getElementById('clima-texto').textContent='Maracaju, MS'; }
+  }
+
+  let toastTimer;
+  function showToast(msg,isError) {
+    const t=document.getElementById('toast');
+    document.getElementById('toast-msg').textContent=msg;
+    t.style.background=isError?'#991B1B':'#0F1629';
+    clearTimeout(toastTimer); t.classList.add('show');
+    toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
+  }
+</script>
+</body>
+</html>
