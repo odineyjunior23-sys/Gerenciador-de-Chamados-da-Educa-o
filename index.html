@@ -960,9 +960,14 @@
     padding: 2rem;
     max-width: 500px;
     width: 90%;
-    max-height: 80vh;
+    max-height: 90vh;
     overflow-y: auto;
     box-shadow: var(--shadow-lg);
+    scrollbar-width: none;
+  }
+
+  .modal-content::-webkit-scrollbar {
+    display: none;
   }
 
   .modal-header {
@@ -1247,6 +1252,32 @@
   /* Mapa */
   .mapa-wrap { border-radius: 14px; overflow: hidden; }
 
+  /* ── REQUISITOS DE SENHA ── */
+  .req-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11.5px;
+    color: #9AA5BE;
+    text-align: left;
+    transition: color 0.2s;
+  }
+  .req-item.ok {
+    color: #15803D;
+  }
+  .req-icon {
+    font-size: 13px;
+    font-weight: 700;
+    width: 16px;
+    text-align: center;
+    color: #EF4444;
+    transition: color 0.2s;
+    flex-shrink: 0;
+  }
+  .req-item.ok .req-icon {
+    color: #15803D;
+  }
+
   /* chamado-nome */
   .chamado-nome {
     font-size: 12px;
@@ -1310,15 +1341,35 @@
         <input type="text" id="cad-username" placeholder="Escolha um nome de usuário...">
       </div>
       <div class="form-group-login">
-        <label for="cad-senha">Senha <span style="color:var(--text3);font-weight:400">(mín. 8 caracteres)</span></label>
+        <label for="cad-senha">Senha</label>
         <div class="pwd-wrap">
-          <input type="password" id="cad-senha" placeholder="Crie uma senha..." oninput="avaliarForcaCad()">
+          <input type="password" id="cad-senha" placeholder="Crie uma senha forte..." oninput="avaliarForcaCad()">
           <button type="button" class="pwd-toggle" onclick="toggleSenha('cad-senha', this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
         </div>
         <div class="pwd-strength-bar"><div class="pwd-strength-fill" id="cad-forca-fill"></div></div>
         <div class="pwd-strength-text" id="cad-forca-texto"></div>
+        <!-- Requisitos visuais -->
+        <div id="cad-requisitos" style="margin-top:10px;display:flex;flex-direction:column;gap:5px;">
+          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:2px;text-align:left;">A senha deve conter:</div>
+          <div class="req-item" id="req-len">
+            <span class="req-icon">✗</span>
+            <span>Mínimo de 8 caracteres</span>
+          </div>
+          <div class="req-item" id="req-upper">
+            <span class="req-icon">✗</span>
+            <span>Pelo menos 1 letra maiúscula (Ex: A, B, C)</span>
+          </div>
+          <div class="req-item" id="req-lower">
+            <span class="req-icon">✗</span>
+            <span>Pelo menos 1 letra minúscula (Ex: a, b, c)</span>
+          </div>
+          <div class="req-item" id="req-special">
+            <span class="req-icon">✗</span>
+            <span>Pelo menos 1 caractere especial (Ex: * ! &amp; @ # $)</span>
+          </div>
+        </div>
       </div>
       <div class="form-group-login">
         <label for="cad-confirmar">Confirmar senha</label>
@@ -1373,7 +1424,7 @@
         </div>
       </div>
       <div class="form-group">
-        <label>Nova senha <span style="color:var(--text3);font-weight:400">(mínimo 8 caracteres)</span></label>
+        <label>Nova senha</label>
         <div class="pwd-wrap">
           <input type="password" id="criar-pwd-nova" placeholder="Digite a nova senha..." oninput="avaliarForcaCriar()">
           <button type="button" class="pwd-toggle" onclick="toggleSenha('criar-pwd-nova', this)">
@@ -1382,6 +1433,26 @@
         </div>
         <div class="pwd-strength-bar"><div class="pwd-strength-fill" id="criar-forca-fill"></div></div>
         <div class="pwd-strength-text" id="criar-forca-texto"></div>
+        <!-- Requisitos visuais -->
+        <div id="trocar-requisitos" style="margin-top:10px;display:flex;flex-direction:column;gap:5px;">
+          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:2px;text-align:left;">A senha deve conter:</div>
+          <div class="req-item" id="treq-len">
+            <span class="req-icon">✗</span>
+            <span>Mínimo de 8 caracteres</span>
+          </div>
+          <div class="req-item" id="treq-upper">
+            <span class="req-icon">✗</span>
+            <span>Pelo menos 1 letra maiúscula (Ex: A, B, C)</span>
+          </div>
+          <div class="req-item" id="treq-lower">
+            <span class="req-icon">✗</span>
+            <span>Pelo menos 1 letra minúscula (Ex: a, b, c)</span>
+          </div>
+          <div class="req-item" id="treq-special">
+            <span class="req-icon">✗</span>
+            <span>Pelo menos 1 caractere especial (Ex: * ! &amp; @ # $)</span>
+          </div>
+        </div>
       </div>
       <div class="form-group">
         <label>Confirmar nova senha</label>
@@ -1744,6 +1815,9 @@
     if (!/^[a-z0-9._]+$/.test(username)) return err('❌ Use apenas letras, números, ponto ou underline.');
     if (!senha || !confirma)         return err('❌ Preencha todos os campos de senha.');
     if (senha.length < 8)            return err('❌ A senha deve ter no mínimo 8 caracteres.');
+    if (!/[A-Z]/.test(senha))        return err('❌ A senha deve ter pelo menos uma letra maiúscula (Ex: A, B, C).');
+    if (!/[a-z]/.test(senha))        return err('❌ A senha deve ter pelo menos uma letra minúscula (Ex: a, b, c).');
+    if (!/[^A-Za-z0-9]/.test(senha)) return err('❌ A senha deve ter pelo menos um caractere especial (Ex: * ! & @ # $).');
     if (senha !== confirma)          return err('❌ As senhas não coincidem.');
     if (tipo === 'admin') {
       const codigo = document.getElementById('cad-codigo-admin').value;
@@ -1820,6 +1894,12 @@
     ['trocar-username','trocar-atual','criar-pwd-nova','criar-pwd-confirmar'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     document.getElementById('criar-forca-fill').style.width='0%';
     document.getElementById('criar-forca-texto').textContent='';
+    // Reseta requisitos visuais
+    ['treq-len','treq-upper','treq-lower','treq-special'].forEach(id=>{
+      const el=document.getElementById(id);
+      el.classList.remove('ok');
+      el.querySelector('.req-icon').textContent='✗';
+    });
     const err=document.getElementById('modal-criar-erro'); err.textContent=''; err.style.display='none';
     document.getElementById('modal-criar-ok').style.display='none';
     if (usuarioAtual) document.getElementById('trocar-username').value=usuarioAtual.username;
@@ -1835,8 +1915,11 @@
     const nova     = document.getElementById('criar-pwd-nova').value;
     const confirma = document.getElementById('criar-pwd-confirmar').value;
     if (!username||!atual||!nova||!confirma) return err('❌ Preencha todos os campos.');
-    if (nova.length<8)   return err('❌ A nova senha deve ter no mínimo 8 caracteres.');
-    if (nova!==confirma) return err('❌ As senhas não coincidem.');
+    if (nova.length<8)                       return err('❌ A senha deve ter no mínimo 8 caracteres.');
+    if (!/[A-Z]/.test(nova))                 return err('❌ A senha deve ter pelo menos uma letra maiúscula (Ex: A, B, C).');
+    if (!/[a-z]/.test(nova))                 return err('❌ A senha deve ter pelo menos uma letra minúscula (Ex: a, b, c).');
+    if (!/[^A-Za-z0-9]/.test(nova))          return err('❌ A senha deve ter pelo menos um caractere especial (Ex: * ! & @ # $).');
+    if (nova!==confirma)                     return err('❌ As senhas não coincidem.');
     try {
       const rows = await sb.get('usuarios?username=eq.'+encodeURIComponent(username)+'&select=id,senha_hash');
       if (!rows||rows.length===0) return err('❌ Usuário não encontrado.');
@@ -1847,8 +1930,39 @@
     } catch(e) { err('❌ Erro ao salvar: '+e.message); }
   }
 
-  function avaliarForcaCad() { _avaliarForca('cad-senha','cad-forca-fill','cad-forca-texto'); }
-  function avaliarForcaCriar(){ _avaliarForca('criar-pwd-nova','criar-forca-fill','criar-forca-texto'); }
+  function avaliarForcaCad() {
+    _avaliarForca('cad-senha','cad-forca-fill','cad-forca-texto');
+    // Atualiza requisitos visuais
+    const val = document.getElementById('cad-senha').value;
+    const checks = {
+      'req-len':     val.length >= 8,
+      'req-upper':   /[A-Z]/.test(val),
+      'req-lower':   /[a-z]/.test(val),
+      'req-special': /[^A-Za-z0-9]/.test(val),
+    };
+    Object.entries(checks).forEach(([id, ok]) => {
+      const el   = document.getElementById(id);
+      const icon = el.querySelector('.req-icon');
+      el.classList.toggle('ok', ok);
+      icon.textContent = ok ? '✓' : '✗';
+    });
+  }
+  function avaliarForcaCriar() {
+    _avaliarForca('criar-pwd-nova','criar-forca-fill','criar-forca-texto');
+    const val = document.getElementById('criar-pwd-nova').value;
+    const checks = {
+      'treq-len':     val.length >= 8,
+      'treq-upper':   /[A-Z]/.test(val),
+      'treq-lower':   /[a-z]/.test(val),
+      'treq-special': /[^A-Za-z0-9]/.test(val),
+    };
+    Object.entries(checks).forEach(([id, ok]) => {
+      const el   = document.getElementById(id);
+      const icon = el.querySelector('.req-icon');
+      el.classList.toggle('ok', ok);
+      icon.textContent = ok ? '✓' : '✗';
+    });
+  }
   function _avaliarForca(inputId, fillId, txtId) {
     const val=document.getElementById(inputId).value;
     const fill=document.getElementById(fillId), txt=document.getElementById(txtId);
