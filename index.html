@@ -1596,8 +1596,11 @@
               <option value="Escola Municipal Maurícia Paré Gomes">Escola Municipal Maurícia Paré Gomes</option>
               <option value="Escola Muninicipal João Batista Lino Braga">Escola Muninicipal João Batista Lino Braga</option>
               <option value="Escola Municipal Júlio Müller">Escola Municipal Júlio Müller</option>
-              <option value="Escola Municipal Ciro Aniz">Escola Municipal Ciro Aniz</option>
-              <option value="Escola José Pereira Da Rosa">Escola José Pereira Da Rosa</option>
+              <option value="Escola Municipal José Pereira da Rosa">Escola Municipal José Pereira da Rosa</option>
+              <option value="Escola Municipal do Campo Laurindo Stragliotto">Escola Municipal do Campo Laurindo Stragliotto</option>
+              <option value="*Sala Maria da Glória Lessa Coelho">*Sala Maria da Glória Lessa Coelho</option>
+              <option value="Escola Municipal Rural Santa Guilhermina – Pólo">Escola Municipal Rural Santa Guilhermina – Pólo</option>
+              <option value="Escola Municipal Indígena Sucuri'y">Escola Municipal Indígena Sucuri'y</option>
             </optgroup>
             <option value="Outro">Outro local...</option>
           </select>
@@ -1708,8 +1711,11 @@
             <option value="Escola Municipal Maurícia Paré Gomes">Escola Municipal Maurícia Paré Gomes</option>
             <option value="Escola Muninicipal João Batista Lino Braga">Escola Muninicipal João Batista Lino Braga</option>
             <option value="Escola Municipal Júlio Müller">Escola Municipal Júlio Müller</option>
-            <option value="Escola Municipal Ciro Aniz">Escola Municipal Ciro Aniz</option>
-            <option value="Escola José Pereira Da Rosa">Escola José Pereira Da Rosa</option>
+            <option value="Escola Municipal José Pereira da Rosa">Escola Municipal José Pereira da Rosa</option>
+            <option value="Escola Municipal do Campo Laurindo Stragliotto">Escola Municipal do Campo Laurindo Stragliotto</option>
+            <option value="*Sala Maria da Glória Lessa Coelho">*Sala Maria da Glória Lessa Coelho</option>
+            <option value="Escola Municipal Rural Santa Guilhermina – Pólo">Escola Municipal Rural Santa Guilhermina – Pólo</option>
+            <option value="Escola Municipal Indígena Sucuri'y">Escola Municipal Indígena Sucuri'y</option>
           </optgroup>
           <option value="Outro">Outro local...</option>
         </select>
@@ -1799,12 +1805,15 @@
     "Escola Municipal Maurícia Paré Gomes":{ regiao:"Vila Adrien",endereco:"Rua Vacaria, 120-178",telefone:"Não informado"},
     "Escola Muninicipal João Batista Lino Braga":{ regiao:"Alto Maracaju",endereco:"Rua Deputado Emanoel Pinheiro, s/nº",telefone:"Não informado"},
     "Escola Municipal Júlio Müller":{ regiao:"Distrito de Vista Alegre",endereco:"Rua Azarias Alves Pereira, s/nº",telefone:"Não informado"},
-    "Escola Municipal Ciro Aniz":{ regiao:"Distrito Vista Alegre",endereco:"Avenida Coronel Francisco Alves",telefone:"Não informado"},
-    "Escola José Pereira Da Rosa":{ regiao:"Ivan Loureiro",endereco:"Rua Osvaldo Cardoso",telefone:"Não informado"},
+    "Escola Municipal José Pereira da Rosa":{ regiao:"Ivan Loureiro",endereco:"Rua Osvaldo Cardoso",telefone:"Não informado"},
+    "Escola Municipal do Campo Laurindo Stragliotto":{ regiao:"Zona Rural",endereco:"Estrada Água Amarela, KM 8, Zona Rural",telefone:"(67) 9-9682-1551",email:"esc_agricola@maracaju.ms.gov.br",gestor:"Zélio Boeira de Araújo"},
+    "*Sala Maria da Glória Lessa Coelho":{ regiao:"Zona Rural",endereco:"Fazenda Engenho",telefone:"(67) 9-8469-0102",gestor:"Sâmara da Silva Melo"},
+    "Escola Municipal Rural Santa Guilhermina – Pólo":{ regiao:"Zona Rural",endereco:"Assentamento Santa Guilhermina",telefone:"(67) 9-8469-0102 / 9-9949-9266",email:"esc_guilhermina@maracaju.ms.gov.br",gestor:"Sâmara da Silva Melo"},
+    "Escola Municipal Indígena Sucuri'y":{ regiao:"Zona Rural",endereco:"Aldeia Indígena, BR 267 Fazenda Alegria KM 05",telefone:"(67) 9-9619-3636 / 9-9673-9243",gestor:"Rita Renovato"},
     "SECRETARIA DE EDUCAÇÃO":{ regiao:"Centro", endereco:"Av. João Pedro Fernandes, 115 – Centro, Maracaju – MS – CEP 79150-027", telefone:"(67) 3454-1982 / (67) 3454-3046", email:"educacao.secretario@maracaju.ms.gov.br", horario:"Seg. a Sex. 07h–11h e 13h–17h", responsavel:"Silvana Pádua de Oliveira Perosa"}
   };
 
-  let chamados = [], filtroAtivo = 'todos', usuarioAtual = null, chamadoEmEdicao = null, tipoCadastro = 'usuario', intervalRealtime = null;
+  let chamados = [], filtroAtivo = 'todos', usuarioAtual = null, chamadoEmEdicao = null, tipoCadastro = 'usuario', intervalRealtime = null, intervalChamados = null;
   const SVG_EYE_OPEN   = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
   const SVG_EYE_CLOSED = `<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
 
@@ -1910,12 +1919,13 @@
         document.getElementById('lista-panel').style.display = 'none';
       }
       await carregarChamados();
-      setInterval(carregarChamados, 5000);
+      intervalChamados = setInterval(carregarChamados, 5000);
     } catch(e) { err('❌ Erro ao conectar: '+e.message); }
   }
 
   function fazerLogout() {
     if (intervalRealtime) { clearInterval(intervalRealtime); intervalRealtime = null; }
+    if (intervalChamados) { clearInterval(intervalChamados); intervalChamados = null; }
     usuarioAtual=null; chamados=[];
     document.getElementById('login-screen').style.display='flex';
     document.getElementById('header').style.display='none';
@@ -2013,6 +2023,7 @@
   }
 
   async function carregarChamados() {
+    if (!usuarioAtual) return;
     try {
       if(usuarioAtual.tipo==='admin' && chamados.length === 0) document.getElementById('lista').innerHTML='<div class="lista-empty"><p>⏳ Carregando chamados…</p></div>';
       const query = usuarioAtual.tipo==='admin'
@@ -2134,7 +2145,8 @@
       const respWrap   = document.getElementById('edit-previa-responsavel-wrap');
       if(info.email)      { document.getElementById('edit-previa-email').textContent=info.email;             emailWrap.style.display='flex';  } else { emailWrap.style.display='none'; }
       if(info.horario)    { document.getElementById('edit-previa-horario').textContent=info.horario;         horarioWrap.style.display='flex';} else { horarioWrap.style.display='none'; }
-      if(info.responsavel){ document.getElementById('edit-previa-responsavel').textContent=info.responsavel; respWrap.style.display='flex';   } else { respWrap.style.display='none'; }
+      const respVal = info.responsavel||info.gestor||null;
+      if(respVal){ document.getElementById('edit-previa-responsavel').textContent=respVal; respWrap.style.display='flex';   } else { respWrap.style.display='none'; }
       previa.classList.add('active');
     } else {
       previa.classList.remove('active');
