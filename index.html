@@ -1687,8 +1687,45 @@
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <label>Local</label>
-        <input type="text" id="edit-local" readonly>
+        <label for="edit-local">Local</label>
+        <select id="edit-local" onchange="atualizarPreviaEdit()">
+          <option value="">Selecione a unidade...</option>
+          <optgroup label="── CIEIs ──">
+            <option value="CIEI GREGÓRIA MARTINS">CIEI GREGÓRIA MARTINS</option>
+            <option value="CIEI NOSSA SENHORA AUXILIADORA">CIEI NOSSA SENHORA AUXILIADORA</option>
+            <option value="CIEI SÃO BENEDITO">CIEI SÃO BENEDITO</option>
+            <option value="CIEI MARIA DALPHINA REZENDE DE CASTRO">CIEI MARIA DALPHINA REZENDE DE CASTRO</option>
+            <option value="CIEI WALTRUDES FERREIRA MUZZI">CIEI WALTRUDES FERREIRA MUZZI</option>
+            <option value="CIEI JOANA SAYD">CIEI JOANA SAYD</option>
+          </optgroup>
+          <optgroup label="── Secretaria ──">
+            <option value="SECRETARIA DE EDUCAÇÃO">SECRETARIA DE EDUCAÇÃO</option>
+          </optgroup>
+          <optgroup label="── Escolas Municipais ──">
+            <option value="Escola Municipal João Pedro Fernandes">Escola Municipal João Pedro Fernandes</option>
+            <option value="Escola Municipal Profª Irma De Lima Matos">Escola Municipal Profª Irma De Lima Matos</option>
+            <option value="Escola Municipal Profª Cecília de Castro Minervini">Escola Municipal Profª Cecília de Castro Minervini</option>
+            <option value="Escola Municipal Maurícia Paré Gomes">Escola Municipal Maurícia Paré Gomes</option>
+            <option value="Escola Muninicipal João Batista Lino Braga">Escola Muninicipal João Batista Lino Braga</option>
+            <option value="Escola Municipal Júlio Müller">Escola Municipal Júlio Müller</option>
+            <option value="Escola Municipal Ciro Aniz">Escola Municipal Ciro Aniz</option>
+            <option value="Escola José Pereira Da Rosa">Escola José Pereira Da Rosa</option>
+          </optgroup>
+          <option value="Outro">Outro local...</option>
+        </select>
+        <!-- Campo texto para local personalizado -->
+        <div id="edit-local-custom-wrap" style="display:none;margin-top:8px;">
+          <input type="text" id="edit-local-custom" placeholder="Descreva o local...">
+        </div>
+        <!-- Prévia do local -->
+        <div id="edit-previa" class="local-preview" style="margin-top:10px;">
+          <div class="preview-item"><b>Região:</b> <span id="edit-previa-regiao">-</span></div>
+          <div class="preview-item"><b>Endereço:</b> <span id="edit-previa-endereco">-</span></div>
+          <div class="preview-item"><b>Telefone:</b> <span id="edit-previa-telefone">-</span></div>
+          <div class="preview-item" id="edit-previa-email-wrap" style="display:none;"><b>E-mail:</b> <span id="edit-previa-email">-</span></div>
+          <div class="preview-item" id="edit-previa-horario-wrap" style="display:none;"><b>Horário:</b> <span id="edit-previa-horario">-</span></div>
+          <div class="preview-item" id="edit-previa-responsavel-wrap" style="display:none;"><b>Responsável:</b> <span id="edit-previa-responsavel">-</span></div>
+        </div>
       </div>
       <div class="form-group">
         <label for="edit-urgencia">Urgência</label>
@@ -2053,19 +2090,67 @@
   function abrirEdicao(id) {
     const c=chamados.find(x=>x.id===id); if(!c) return;
     chamadoEmEdicao=id;
-    document.getElementById('edit-local').value=c.local;
+
+    const select     = document.getElementById('edit-local');
+    const customWrap = document.getElementById('edit-local-custom-wrap');
+    const customInput= document.getElementById('edit-local-custom');
+
+    // Verifica se o local do chamado está nas opções do select
+    const opcaoExiste = Array.from(select.options).some(o => o.value === c.local);
+    if (opcaoExiste) {
+      select.value = c.local;
+      customWrap.style.display = 'none';
+    } else {
+      select.value = 'Outro';
+      customWrap.style.display = 'block';
+      customInput.value = c.local;
+    }
+
     document.getElementById('edit-urgencia').value=c.urgencia;
     document.getElementById('edit-problema').value=c.problema;
+    atualizarPreviaEdit();
     abrirModal('modal-editar');
   }
 
+  function atualizarPreviaEdit() {
+    const local      = document.getElementById('edit-local').value;
+    const previa     = document.getElementById('edit-previa');
+    const customWrap = document.getElementById('edit-local-custom-wrap');
+
+    if (local === 'Outro') {
+      customWrap.style.display = 'block';
+      previa.classList.remove('active');
+      return;
+    }
+    customWrap.style.display = 'none';
+
+    if (DADOS_LOCAIS[local]) {
+      const info = DADOS_LOCAIS[local];
+      document.getElementById('edit-previa-regiao').textContent   = info.regiao   || '-';
+      document.getElementById('edit-previa-endereco').textContent = info.endereco || '-';
+      document.getElementById('edit-previa-telefone').textContent = info.telefone || '-';
+      const emailWrap  = document.getElementById('edit-previa-email-wrap');
+      const horarioWrap= document.getElementById('edit-previa-horario-wrap');
+      const respWrap   = document.getElementById('edit-previa-responsavel-wrap');
+      if(info.email)      { document.getElementById('edit-previa-email').textContent=info.email;             emailWrap.style.display='flex';  } else { emailWrap.style.display='none'; }
+      if(info.horario)    { document.getElementById('edit-previa-horario').textContent=info.horario;         horarioWrap.style.display='flex';} else { horarioWrap.style.display='none'; }
+      if(info.responsavel){ document.getElementById('edit-previa-responsavel').textContent=info.responsavel; respWrap.style.display='flex';   } else { respWrap.style.display='none'; }
+      previa.classList.add('active');
+    } else {
+      previa.classList.remove('active');
+    }
+  }
+
   async function salvarEdicao() {
+    let local = document.getElementById('edit-local').value;
+    if (local === 'Outro') local = document.getElementById('edit-local-custom').value.trim();
+    if (!local) { showToast('Selecione ou informe o local.', true); return; }
     const urgencia=document.getElementById('edit-urgencia').value;
     const problema=document.getElementById('edit-problema').value;
     try {
-      await sb.patch('chamados?id=eq.'+chamadoEmEdicao,{urgencia,problema});
+      await sb.patch('chamados?id=eq.'+chamadoEmEdicao,{local,urgencia,problema});
       const c=chamados.find(x=>x.id===chamadoEmEdicao);
-      if(c){c.urgencia=urgencia;c.problema=problema;}
+      if(c){c.local=local;c.urgencia=urgencia;c.problema=problema;}
       fecharModal('modal-editar'); atualizarStats(); renderLista();
       showToast('Chamado #'+String(chamadoEmEdicao).padStart(4,'0')+' atualizado.');
       chamadoEmEdicao=null;
