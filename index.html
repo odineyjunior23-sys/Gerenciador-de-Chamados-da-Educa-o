@@ -1858,7 +1858,7 @@
     const tipo     = tipoCadastro;
     if (!username)                   return err('❌ Digite um nome de usuário.');
     if (username.length < 3)         return err('❌ O usuário deve ter no mínimo 3 caracteres.');
-    if (!/^[a-z0-9._]+$/.test(username)) return err('❌ Use apenas letras, números, ponto ou underline.');
+    if (!/^[a-zA-Z0-9._ ]+$/.test(username)) return err('❌ Use apenas letras, números, ponto, underline ou espaço.');
     if (!senha || !confirma)         return err('❌ Preencha todos os campos de senha.');
     if (senha.length < 8)            return err('❌ A senha deve ter no mínimo 8 caracteres.');
     if (!/[A-Z]/.test(senha))        return err('❌ A senha deve ter pelo menos uma letra maiúscula (Ex: A, B, C).');
