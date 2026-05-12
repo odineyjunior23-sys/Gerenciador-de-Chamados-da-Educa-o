@@ -2039,7 +2039,7 @@
         criado_em:r.criado_em
       }));
       if (JSON.stringify(novos) !== JSON.stringify(chamados)) {
-        if (usuarioAtual.tipo === 'admin' && chamados.length > 0 && novos.length > chamados.length) showToast('🔔 Novo chamado recebido!');
+        if (usuarioAtual.tipo === 'admin' && chamados.length > 0 && novos.length > chamados.length) { tocarSomNotificacao(); showToast('🔔 Novo chamado recebido!'); }
         chamados = novos;
         if(usuarioAtual.tipo==='admin') { atualizarStats(); renderLista(); }
       }
@@ -2062,7 +2062,7 @@
         criado_em:r.criado_em
       }));
       if (JSON.stringify(novos) !== JSON.stringify(chamados)) {
-        if (usuarioAtual.tipo === 'admin' && novos.length > chamados.length) showToast('🔔 Novo chamado recebido!');
+        if (usuarioAtual.tipo === 'admin' && novos.length > chamados.length) { tocarSomNotificacao(); showToast('🔔 Novo chamado recebido!'); }
         chamados = novos;
         if(usuarioAtual.tipo==='admin') { atualizarStats(); renderLista(); }
       }
@@ -2435,6 +2435,45 @@
         document.getElementById('clima-texto').textContent=`${temp}°C • ${desc}`;
       }
     } catch { document.getElementById('clima-texto').textContent='Maracaju, MS'; }
+  }
+
+  /* ── SOM DE NOTIFICAÇÃO ── */
+  function tocarSomNotificacao() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      // Nota 1: sol (G5)
+      const o1 = ctx.createOscillator();
+      const g1 = ctx.createGain();
+      o1.connect(g1); g1.connect(ctx.destination);
+      o1.type = 'sine';
+      o1.frequency.setValueAtTime(784, ctx.currentTime);
+      g1.gain.setValueAtTime(0.35, ctx.currentTime);
+      g1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+      o1.start(ctx.currentTime);
+      o1.stop(ctx.currentTime + 0.25);
+      // Nota 2: dó (C6)
+      const o2 = ctx.createOscillator();
+      const g2 = ctx.createGain();
+      o2.connect(g2); g2.connect(ctx.destination);
+      o2.type = 'sine';
+      o2.frequency.setValueAtTime(1047, ctx.currentTime + 0.18);
+      g2.gain.setValueAtTime(0, ctx.currentTime);
+      g2.gain.setValueAtTime(0.4, ctx.currentTime + 0.18);
+      g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.55);
+      o2.start(ctx.currentTime + 0.18);
+      o2.stop(ctx.currentTime + 0.55);
+      // Nota 3: mi (E6) – acorde final
+      const o3 = ctx.createOscillator();
+      const g3 = ctx.createGain();
+      o3.connect(g3); g3.connect(ctx.destination);
+      o3.type = 'sine';
+      o3.frequency.setValueAtTime(1319, ctx.currentTime + 0.38);
+      g3.gain.setValueAtTime(0, ctx.currentTime);
+      g3.gain.setValueAtTime(0.3, ctx.currentTime + 0.38);
+      g3.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.85);
+      o3.start(ctx.currentTime + 0.38);
+      o3.stop(ctx.currentTime + 0.85);
+    } catch(e) { /* silencia erros de contexto de áudio */ }
   }
 
   let toastTimer;
