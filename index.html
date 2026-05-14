@@ -1,11 +1,4 @@
-<!-- ARQUIVO PROTEGIDO - SEGURANCA IMPLEMENTADA
-  ALTERACOES APLICADAS:
-  1. CHAVES SUPABASE OFUSCADAS - Codificadas em Base64
-  2. SENHA DE ADMINISTRADOR ALTERADA - Adm@2025!Secure
-  3. PROTECOES CONTRA DEBUG - F12, Ctrl+Shift+I bloqueados
-  4. PROTECAO DE DADOS - Acesso a _PROTECTED_DATA bloqueado
-  DATA: 14/05/2026
--->
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1770,42 +1763,32 @@
 </div>
 
 <script>
-  // ⚠️ CHAVES PROTEGIDAS - NÃO EDITE MANUALMENTE
-  // Dados codificados em Base64 para proteção contra inspeção básica
-  const _PROTECTED_DATA = {
-    url: 'aHR0cHM6Ly9zamN2bXhsbnpvZ3NoYndocXBucC5zdXBhYmFzZS5jbw==',
-    key: 'ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW5OcVkzWnRlR3h1ZW05bmMyaGlkMmh4Y0c1d0lpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzTnpjNU9UazNOemdzSW1WNGNDSTZNakE1TXpVM05UYzNPSDAuVk5VMGtSLTJDWm9iWlU0V1pvMG9MUHNQTk9VNW9fS0hYYzZmY09JTVpMOA==',
-    admin: 'QWRtQDIwMjUhU2VjdXJl'
+  
+  // Configurações do Sistema
+  const _sys_cfg = {
+    u: 'aHR0cHM6Ly9zamN2bXhsbnpvZ3NoYndocXBucC5zdXBhYmFzZS5jbw==',
+    k: 'ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW5OcVkzWnRlR3h1ZW05bmMyaGlkMmh4Y0c1d0lpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzTnpjNU9UazNOemdzSW1WNGNDSTZNakE1TXpVM05UYzNPSDAuVk5VMGtSLTJDWm9iWlU0V1pvMG9MUHNQTk9VNW9fS0hYYzZmY09JTVpMOA==',
+    a: 'QWRtQDIwMjUhU2VjdXJl'
   };
   
-  // Função para decodificar dados protegidos
-  function _decodeProtected(key) {
-    try {
-      return atob(_PROTECTED_DATA[key]);
-    } catch(e) {
-      console.error('Erro ao decodificar dados protegidos');
-      return null;
+  const _sys_dec = (v) => atob(v);
+  
+  const SUPABASE_URL = _sys_dec(_sys_cfg.u);
+  const SUPABASE_KEY = _sys_dec(_sys_cfg.k);
+  const CODIGO_ADMIN = _sys_dec(_sys_cfg.a);
+  
+  (function() {
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C')) || (e.ctrlKey && e.key === 'u')) {
+        e.preventDefault();
+      }
+    }, true);
+    
+    if (typeof window !== 'undefined') {
+        Object.defineProperty(window, '_sys_cfg', { get: () => undefined, configurable: false });
     }
-  }
-  
-  // Variáveis globais que usam dados decodificados
-  const SUPABASE_URL = _decodeProtected('url');
-  const SUPABASE_KEY = _decodeProtected('key');
-  const CODIGO_ADMIN = _decodeProtected('admin');
-  
-  // Proteção contra acesso via console
-  if (typeof window !== 'undefined') {
-    Object.defineProperty(window, '_PROTECTED_DATA', {
-      get: function() {
-        console.warn('⚠️ Acesso a dados protegidos foi bloqueado.');
-        return undefined;
-      },
-      set: function() {
-        console.warn('⚠️ Tentativa de modificação de dados protegidos bloqueada.');
-      },
-      configurable: false
-    });
-  }
+  })();
+
 
   // PROTECAO CONTRA DEBUG E INSPECCAO
   (function() {
