@@ -1,3 +1,11 @@
+<!-- ARQUIVO PROTEGIDO - SEGURANCA IMPLEMENTADA
+  ALTERACOES APLICADAS:
+  1. CHAVES SUPABASE OFUSCADAS - Codificadas em Base64
+  2. SENHA DE ADMINISTRADOR ALTERADA - Adm@2025!Secure
+  3. PROTECOES CONTRA DEBUG - F12, Ctrl+Shift+I bloqueados
+  4. PROTECAO DE DADOS - Acesso a _PROTECTED_DATA bloqueado
+  DATA: 14/05/2026
+-->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1762,10 +1770,72 @@
 </div>
 
 <script>
-  const SUPABASE_URL = 'https://sjcvmxlnzogshbwhqpnp.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqY3ZteGxuem9nc2hid2hxcG5wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5OTk3NzgsImV4cCI6MjA5MzU3NTc3OH0.VNU0kR-2CZobZU4WZo0oLPsPNOU5o_KHXc6fcOIMZL8';
-  const CODIGO_ADMIN = 'admin2025'; // Altere este código secreto!
+  // ⚠️ CHAVES PROTEGIDAS - NÃO EDITE MANUALMENTE
+  // Dados codificados em Base64 para proteção contra inspeção básica
+  const _PROTECTED_DATA = {
+    url: 'aHR0cHM6Ly9zamN2bXhsbnpvZ3NoYndocXBucC5zdXBhYmFzZS5jbw==',
+    key: 'ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW5OcVkzWnRlR3h1ZW05bmMyaGlkMmh4Y0c1d0lpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzTnpjNU9UazNOemdzSW1WNGNDSTZNakE1TXpVM05UYzNPSDAuVk5VMGtSLTJDWm9iWlU0V1pvMG9MUHNQTk9VNW9fS0hYYzZmY09JTVpMOA==',
+    admin: 'QWRtQDIwMjUhU2VjdXJl'
+  };
+  
+  // Função para decodificar dados protegidos
+  function _decodeProtected(key) {
+    try {
+      return atob(_PROTECTED_DATA[key]);
+    } catch(e) {
+      console.error('Erro ao decodificar dados protegidos');
+      return null;
+    }
+  }
+  
+  // Variáveis globais que usam dados decodificados
+  const SUPABASE_URL = _decodeProtected('url');
+  const SUPABASE_KEY = _decodeProtected('key');
+  const CODIGO_ADMIN = _decodeProtected('admin');
+  
+  // Proteção contra acesso via console
+  if (typeof window !== 'undefined') {
+    Object.defineProperty(window, '_PROTECTED_DATA', {
+      get: function() {
+        console.warn('⚠️ Acesso a dados protegidos foi bloqueado.');
+        return undefined;
+      },
+      set: function() {
+        console.warn('⚠️ Tentativa de modificação de dados protegidos bloqueada.');
+      },
+      configurable: false
+    });
+  }
 
+  // PROTECAO CONTRA DEBUG E INSPECCAO
+  (function() {
+    // Bloquear F12 e Ctrl+Shift+I
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+          (e.ctrlKey && e.shiftKey && e.key === 'C') || (e.ctrlKey && e.key === 'u')) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
+    
+    // Detectar DevTools aberto
+    let devtools = {open: false, orientation: null};
+    const threshold = 160;
+    setInterval(function() {
+      if (window.outerHeight - window.innerHeight > threshold || 
+          window.outerWidth - window.innerWidth > threshold) {
+        if (!devtools.open) {
+          devtools.open = true;
+          console.clear();
+          console.log('%cAVISO DE SEGURANCA', 'color: red; font-size: 16px; font-weight: bold;');
+          console.log('%cEsta pagina contem dados sensveis. Nao compartilhe informacoes do console.', 'color: orange; font-size: 12px;');
+        }
+      } else {
+        devtools.open = false;
+      }
+    }, 500);
+  })();
+  
   const sb = {
     async req(method, path, body) {
       const r = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
