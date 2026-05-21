@@ -1071,7 +1071,12 @@
       max-width: 100%;
       grid-template-columns: 1fr;
       gap: 1.2rem;
+      display: flex;
+      flex-direction: column;
     }
+    #form-panel { order: 1; }
+    #historico-panel { order: 2; }
+    #lista-panel { order: 3; }
     .header-inner {
       padding: 0 1.2rem;
     }
@@ -1170,8 +1175,12 @@
       max-width: 100%;
       padding: 1rem;
       gap: 1rem;
-      grid-template-columns: 1fr;
+      display: flex;
+      flex-direction: column;
     }
+    #form-panel { order: 1; }
+    #historico-panel { order: 2; }
+    #lista-panel { order: 3; }
     .stats-bar {
       grid-template-columns: repeat(2, 1fr);
       gap: 10px;
