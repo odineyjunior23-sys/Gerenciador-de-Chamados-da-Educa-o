@@ -493,13 +493,25 @@
 
   /* ── LAYOUT ── */
   main {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 1.5rem;
     display: grid;
     grid-template-columns: 380px 1fr;
     gap: 1.5rem;
     align-items: start;
+  }
+
+  main:not(.admin-view) {
+    grid-template-columns: 380px 1fr;
+  }
+
+  #historico-panel {
+    display: none;
+  }
+
+  main:not(.admin-view) #historico-panel {
+    display: block;
   }
 
   main.admin-view {
@@ -900,6 +912,7 @@
 
   .sp-aberto  { background: #E0F2FE; color: #0369A1; }
   .sp-fechado { background: #F1F5F9; color: #475569; }
+  .sp-fechado-verde { background: #DCFCE7; color: #15803D; } /* Verde para histórico */
 
   .action-buttons {
     display: flex;
@@ -1645,6 +1658,23 @@
     </div>
   </aside>
 
+  <!-- HISTÓRICO (apenas usuário) -->
+  <section id="historico-panel">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <div class="panel-dot" style="background: var(--baixa);"></div>
+          <span class="panel-title">Histórico de chamados</span>
+        </div>
+      </div>
+      <div class="lista-body" id="historico-lista">
+        <div class="lista-empty">
+          <p>⏳ Carregando histórico...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- LISTA (apenas admin) -->
   <section id="lista-panel" style="display:none;">
     <div class="panel">
@@ -2096,6 +2126,7 @@
         if (usuarioAtual.tipo === 'admin' && chamados.length > 0 && novos.length > chamados.length) { tocarSomNotificacao(); showToast('🔔 Novo chamado recebido!'); }
         chamados = novos;
         if(usuarioAtual.tipo==='admin') { atualizarStats(); renderLista(); }
+        else { renderHistorico(); }
       }
     } catch(e) { showToast('Erro ao carregar chamados: '+e.message,true); }
   }
@@ -2119,6 +2150,7 @@
         if (usuarioAtual.tipo === 'admin' && novos.length > chamados.length) { tocarSomNotificacao(); showToast('🔔 Novo chamado recebido!'); }
         chamados = novos;
         if(usuarioAtual.tipo==='admin') { atualizarStats(); renderLista(); }
+        else { renderHistorico(); }
       }
     } catch(e) { console.warn('Quick Update falhou'); }
   }
@@ -2302,6 +2334,38 @@
             ${c.status==='aberto'?`<button class="btn-action" onclick="fecharChamado(${c.id})">Fechar</button>`:`<button class="btn-action" onclick="reabrirChamado(${c.id})">Reabrir</button>`}
             <button class="btn-action danger" onclick="excluirChamado(${c.id})">Excluir</button>
           </div>
+        </div>
+      </div>`).join('');
+  }
+
+  function renderHistorico() {
+    const lista=document.getElementById('historico-lista');
+    if(!lista) return;
+    const fechados = chamados.filter(c => c.status === 'fechado');
+    if(fechados.length===0){
+      lista.innerHTML=`<div class="lista-empty"><div class="empty-circle"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6M9 16h6M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z"/></svg></div><p>Nenhum chamado fechado.</p></div>`;
+      return;
+    }
+    const urgLabels={baixa:'Baixa',media:'Média',alta:'Alta'};
+    lista.innerHTML=fechados.map(c=>`
+      <div class="chamado-item fechado">
+        <div><div class="chamado-num">#${String(c.id).padStart(4,'0')}</div></div>
+        <div class="chamado-body">
+          <div class="chamado-local">
+            <svg viewBox="0 0 16 16" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9a3 3 0 100-6 3 3 0 000 6z"/><path d="M8 14s5-4.5 5-8a5 5 0 00-10 0c0 3.5 5 8 5 8z"/></svg>
+            ${escHtml(c.local)}
+          </div>
+          <div class="chamado-problema">${escHtml(c.problema)}</div>
+          <div class="chamado-meta">
+            <span class="badge b-${c.urgencia}"><span class="badge-dot"></span>${urgLabels[c.urgencia]}</span>
+            <span class="chamado-time">
+              <svg viewBox="0 0 16 16" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+              ${c.data} às ${c.hora}
+            </span>
+          </div>
+        </div>
+        <div class="chamado-actions">
+          <span class="status-pill sp-fechado-verde">Fechado</span>
         </div>
       </div>`).join('');
   }
