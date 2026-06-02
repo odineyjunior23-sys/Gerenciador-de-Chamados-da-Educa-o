@@ -31,6 +31,7 @@
     --baixa: #15803d; --baixa-bg: #f0fdf4; --baixa-border: #bbf7d0;
     --media: #b45309; --media-bg: #fffbeb; --media-border: #fef3c7;
     --alta: #b91c1c;  --alta-bg: #fef2f2;  --alta-border: #fee2e2;
+    --fechado: #475569; --fechado-bg: #f1f5f9; --fechado-border: #cbd5e1;
     --radius: 12px;
     --radius-lg: 16px;
     --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -522,7 +523,7 @@
   .stats-bar {
     grid-column: 1 / -1;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 12px;
   }
 
@@ -530,10 +531,10 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 1.25rem;
+    padding: 1rem 0.9rem;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     box-shadow: var(--shadow);
     transition: all 0.2s ease;
   }
@@ -556,6 +557,8 @@
   .si-media svg  { stroke: var(--media); }
   .si-alta   { background: var(--alta-bg); }
   .si-alta svg   { stroke: var(--alta); }
+  .si-fechado { background: var(--fechado-bg); }
+  .si-fechado svg { stroke: var(--fechado); }
 
   .stat-info { min-width: 0; }
   .stat-num  { font-size: 24px; font-weight: 600; line-height: 1; font-family: 'DM Mono', monospace; }
@@ -564,6 +567,7 @@
   .sn-baixa  { color: var(--baixa); }
   .sn-media  { color: var(--media); }
   .sn-alta   { color: var(--alta); }
+  .sn-fechado { color: var(--fechado); }
 
   /* ── PANEL ── */
   .panel {
@@ -1081,11 +1085,11 @@
       padding: 0 1.2rem;
     }
     .stats-bar {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
     }
     .stat-card {
-      padding: 1.2rem;
+      padding: 0.9rem 0.75rem;
     }
     .stat-num {
       font-size: 24px;
@@ -1182,27 +1186,29 @@
     #historico-panel { order: 2; }
     #lista-panel { order: 3; }
     .stats-bar {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
     }
     .stat-card {
-      padding: 1rem;
-      gap: 10px;
+      padding: 0.75rem 0.5rem;
+      gap: 8px;
       border-radius: 12px;
+      flex-direction: column;
+      align-items: flex-start;
     }
     .stat-icon {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
     }
     .stat-icon svg {
-      width: 18px;
-      height: 18px;
+      width: 15px;
+      height: 15px;
     }
     .stat-num {
-      font-size: 20px;
+      font-size: 18px;
     }
     .stat-label {
-      font-size: 11px;
+      font-size: 10px;
     }
     .panel {
       border-radius: 12px;
@@ -1416,27 +1422,29 @@
       gap: 0.75rem;
     }
     .stats-bar {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
     }
     .stat-card {
-      padding: 0.9rem;
-      gap: 8px;
+      padding: 0.6rem 0.4rem;
+      gap: 6px;
       border-radius: 10px;
+      flex-direction: column;
+      align-items: flex-start;
     }
     .stat-icon {
-      width: 28px;
-      height: 28px;
+      width: 24px;
+      height: 24px;
     }
     .stat-icon svg {
-      width: 16px;
-      height: 16px;
+      width: 13px;
+      height: 13px;
     }
     .stat-num {
-      font-size: 18px;
+      font-size: 16px;
     }
     .stat-label {
-      font-size: 10px;
+      font-size: 9px;
     }
     .panel {
       border-radius: 10px;
@@ -2111,6 +2119,17 @@
       <div class="stat-info">
         <div class="stat-num sn-alta" id="st-alta">0</div>
         <div class="stat-label">Urgência alta</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon si-fechado">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-num sn-fechado" id="st-fechado">0</div>
+        <div class="stat-label">Chamados fechados</div>
       </div>
     </div>
   </div>
@@ -2839,6 +2858,7 @@
     document.getElementById('st-baixa').textContent=chamados.filter(c=>c.urgencia==='baixa').length;
     document.getElementById('st-media').textContent=chamados.filter(c=>c.urgencia==='media').length;
     document.getElementById('st-alta').textContent =chamados.filter(c=>c.urgencia==='alta').length;
+    document.getElementById('st-fechado').textContent=chamados.filter(c=>c.status==='fechado').length;
   }
 
   function renderLista() {
