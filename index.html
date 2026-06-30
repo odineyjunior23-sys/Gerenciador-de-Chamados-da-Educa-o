@@ -32,6 +32,7 @@
     --media: #b45309; --media-bg: #fffbeb; --media-border: #fef3c7;
     --alta: #b91c1c;  --alta-bg: #fef2f2;  --alta-border: #fee2e2;
     --fechado: #475569; --fechado-bg: #f1f5f9; --fechado-border: #cbd5e1;
+    --pendente: #b45309; --pendente-bg: #fffbeb; --pendente-border: #fde68a;
     --radius: 12px;
     --radius-lg: 16px;
     --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -559,6 +560,8 @@
   .si-alta svg   { stroke: var(--alta); }
   .si-fechado { background: var(--fechado-bg); }
   .si-fechado svg { stroke: var(--fechado); }
+  .si-pendente { background: var(--pendente-bg); }
+  .si-pendente svg { stroke: var(--pendente); }
 
   .stat-info { min-width: 0; }
   .stat-num  { font-size: 24px; font-weight: 600; line-height: 1; font-family: 'DM Mono', monospace; }
@@ -568,6 +571,7 @@
   .sn-media  { color: var(--media); }
   .sn-alta   { color: var(--alta); }
   .sn-fechado { color: var(--fechado); }
+  .sn-pendente { color: var(--pendente); }
 
   /* ── PANEL ── */
   .panel {
@@ -914,6 +918,7 @@
   .sp-aberto  { background: #E0F2FE; color: #0369A1; }
   .sp-fechado { background: #F1F5F9; color: #475569; }
   .sp-fechado-verde { background: #DCFCE7; color: #15803D; } /* Verde para histórico */
+  .sp-pendente { background: var(--pendente-bg); color: var(--pendente); }
 
   .action-buttons {
     display: flex;
@@ -2122,6 +2127,17 @@
       </div>
     </div>
     <div class="stat-card">
+      <div class="stat-icon si-pendente">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/><path d="M12 7v5l-3 2"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-num sn-pendente" id="st-pendente">0</div>
+        <div class="stat-label">Chamados pendentes</div>
+      </div>
+    </div>
+    <div class="stat-card">
       <div class="stat-icon si-fechado">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -2261,6 +2277,7 @@
         <div class="filter-row">
           <button class="filter-btn active" data-filter="todos"  onclick="setFiltro(this)">Todos</button>
           <button class="filter-btn" data-filter="aberto"        onclick="setFiltro(this)">Abertos</button>
+          <button class="filter-btn" data-filter="pendente"      onclick="setFiltro(this)">Pendentes</button>
           <button class="filter-btn" data-filter="fechado"       onclick="setFiltro(this)">Fechados</button>
           <button class="filter-btn" data-filter="alta"          onclick="setFiltro(this)">Alta urgência</button>
         </div>
@@ -2838,6 +2855,15 @@
     } catch(e) { showToast('Erro: '+e.message,true); }
   }
 
+  async function marcarPendente(id) {
+    try {
+      await sb.patch('chamados?id=eq.'+id,{status:'pendente'});
+      const c=chamados.find(x=>x.id===id); if(c) c.status='pendente';
+      atualizarStats(); renderLista();
+      showToast('Chamado #'+String(id).padStart(4,'0')+' marcado como pendente.');
+    } catch(e) { showToast('Erro: '+e.message,true); }
+  }
+
   async function excluirChamado(id) {
     if(!confirm('Tem certeza que deseja excluir este chamado?')) return;
     try {
@@ -2859,15 +2885,17 @@
     document.getElementById('st-media').textContent=chamados.filter(c=>c.urgencia==='media').length;
     document.getElementById('st-alta').textContent =chamados.filter(c=>c.urgencia==='alta').length;
     document.getElementById('st-fechado').textContent=chamados.filter(c=>c.status==='fechado').length;
+    document.getElementById('st-pendente').textContent=chamados.filter(c=>c.status==='pendente').length;
   }
 
   function renderLista() {
     const lista=document.getElementById('lista');
     const busca=document.getElementById('busca').value.toLowerCase();
     let filtrados=chamados.filter(c=>{
-      if(filtroAtivo==='aberto')  return c.status==='aberto';
-      if(filtroAtivo==='fechado') return c.status==='fechado';
-      if(filtroAtivo==='alta')    return c.urgencia==='alta'&&c.status==='aberto';
+      if(filtroAtivo==='aberto')   return c.status==='aberto';
+      if(filtroAtivo==='pendente') return c.status==='pendente';
+      if(filtroAtivo==='fechado')  return c.status==='fechado';
+      if(filtroAtivo==='alta')     return c.urgencia==='alta'&&c.status==='aberto';
       return true;
     }).filter(c=>!busca||c.local.toLowerCase().includes(busca)||c.problema.toLowerCase().includes(busca)||(c.nome_solicitante||'').toLowerCase().includes(busca));
     if(filtrados.length===0){
@@ -2894,10 +2922,11 @@
           </div>
         </div>
         <div class="chamado-actions">
-          <span class="status-pill sp-${c.status}">${c.status==='aberto'?'Aberto':'Fechado'}</span>
+          <span class="status-pill sp-${c.status}">${c.status==='aberto'?'Aberto':c.status==='pendente'?'Pendente':'Fechado'}</span>
           <div class="action-buttons">
-            ${c.status==='aberto'?`<button class="btn-action" onclick="abrirEdicao(${c.id})">Editar</button>`:''}
-            ${c.status==='aberto'?`<button class="btn-action" onclick="fecharChamado(${c.id})">Fechar</button>`:`<button class="btn-action" onclick="reabrirChamado(${c.id})">Reabrir</button>`}
+            ${c.status!=='fechado'?`<button class="btn-action" onclick="abrirEdicao(${c.id})">Editar</button>`:''}
+            ${c.status==='aberto'?`<button class="btn-action" onclick="marcarPendente(${c.id})">Pendente</button>`:''}
+            ${c.status!=='fechado'?`<button class="btn-action" onclick="fecharChamado(${c.id})">Fechar</button>`:`<button class="btn-action" onclick="reabrirChamado(${c.id})">Reabrir</button>`}
             <button class="btn-action danger" onclick="excluirChamado(${c.id})">Excluir</button>
           </div>
         </div>
@@ -2912,8 +2941,8 @@
       return;
     }
     const urgLabels={baixa:'Baixa',media:'Média',alta:'Alta'};
-    const statusLabel={aberto:'Aberto',fechado:'Fechado'};
-    const statusClass={aberto:'sp-aberto',fechado:'sp-fechado-verde'};
+    const statusLabel={aberto:'Aberto',pendente:'Pendente',fechado:'Fechado'};
+    const statusClass={aberto:'sp-aberto',pendente:'sp-pendente',fechado:'sp-fechado-verde'};
     lista.innerHTML=chamados.map(c=>`
       <div class="chamado-item ${c.status==='fechado'?'fechado':''}">
         <div><div class="chamado-num">#${String(c.id).padStart(4,'0')}</div></div>
@@ -2961,9 +2990,10 @@
   function getDadosFiltrados() {
     const busca=document.getElementById('busca').value.toLowerCase();
     return chamados.filter(c=>{
-      if(filtroAtivo==='aberto')  return c.status==='aberto';
-      if(filtroAtivo==='fechado') return c.status==='fechado';
-      if(filtroAtivo==='alta')    return c.urgencia==='alta'&&c.status==='aberto';
+      if(filtroAtivo==='aberto')   return c.status==='aberto';
+      if(filtroAtivo==='pendente') return c.status==='pendente';
+      if(filtroAtivo==='fechado')  return c.status==='fechado';
+      if(filtroAtivo==='alta')     return c.urgencia==='alta'&&c.status==='aberto';
       return true;
     }).filter(c=>!busca||c.local.toLowerCase().includes(busca)||c.problema.toLowerCase().includes(busca)||(c.nome_solicitante||'').toLowerCase().includes(busca));
   }
