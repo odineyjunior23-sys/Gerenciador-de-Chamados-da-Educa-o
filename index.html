@@ -312,6 +312,30 @@
   .pwd-toggle:hover { color: var(--pri); }
   .pwd-toggle svg { width: 18px; height: 18px; }
 
+  /* ── USUÁRIOS / SENHA PROVISÓRIA ── */
+  .login-info {
+    display: none; background: #e8f6ef; color: #1e8e5a; padding: 10px 12px;
+    border-radius: var(--radius); font-size: 13px; font-weight: 500;
+    margin-bottom: 12px; text-align: left; line-height: 1.45;
+  }
+  .aviso-senha {
+    display: none; background: #FEF3C7; color: #92400E; padding: 10px 12px;
+    border-radius: var(--radius); font-size: 13px; font-weight: 500;
+    margin-bottom: 14px; line-height: 1.45;
+  }
+  #modal-usuarios .modal-content { max-width: 720px; }
+  .tbl-usuarios { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tbl-usuarios th, .tbl-usuarios td { padding: 8px 6px; text-align: left; border-bottom: 1px solid var(--border); }
+  .tbl-usuarios th { font-size: 11px; text-transform: uppercase; color: var(--text3); }
+  .tbl-wrap { max-height: 50vh; overflow-y: auto; }
+  .st-pill { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .st-pill.ok { background: #e8f6ef; color: #1e8e5a; }
+  .st-pill.pend { background: #FEF3C7; color: #92400E; }
+  .btn-redef { padding: 5px 10px; border-radius: var(--radius); border: 1px solid var(--border); background: #fff; color: var(--pri); font-size: 12px; font-weight: 600; cursor: pointer; }
+  .btn-redef:hover { background: var(--pri-light); }
+  .btn-redef:disabled { opacity: .45; cursor: not-allowed; }
+  .senha-temp { font-family: monospace; font-size: 22px; font-weight: 700; letter-spacing: 1px; text-align: center; background: var(--pri-light); color: var(--pri); padding: 14px; border-radius: var(--radius); margin: 12px 0; user-select: all; }
+
   /* ── LINK TROCAR SENHA ── */
   .link-change-pwd {
     display: inline-block;
@@ -2017,6 +2041,7 @@
     </div>
 
     <div id="login-error" class="login-error"></div>
+    <div id="login-info" class="login-info"></div>
 
     <!-- FORMULÁRIO ENTRAR -->
     <div id="form-entrar" class="login-form active">
@@ -2039,7 +2064,7 @@
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><rect x="3" y="9" width="14" height="10" rx="2"/><path d="M7 9V6a3 3 0 016 0v3"/></svg>
         Criar nova conta
       </button>
-      <button class="link-change-pwd" onclick="abrirTrocarSenha()" style="margin-top:8px;">🔑 Alterar minha senha</button>
+      <button type="button" class="link-change-pwd" onclick="esqueci()" style="margin-top:8px;">🔑 Esqueci minha senha</button>
       <p style="margin-top:16px; font-size:13px; color:var(--text3); text-align:center;">&copy;Copyright Odiney Junior 2026</p>
     </div>
 
@@ -2112,17 +2137,59 @@
   </div>
 </div>
 
+<!-- MODAL USUÁRIOS (ADMIN) -->
+<div class="modal" id="modal-usuarios">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>Usuários cadastrados</span>
+      <button class="modal-close" onclick="fecharModal('modal-usuarios')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <input type="text" id="usuarios-busca" placeholder="Buscar usuário..." oninput="renderUsuarios()">
+      </div>
+      <div id="usuarios-erro" class="login-error"></div>
+      <div class="tbl-wrap">
+        <table class="tbl-usuarios">
+          <thead><tr><th>Usuário</th><th>Tipo</th><th>Senha</th><th></th></tr></thead>
+          <tbody id="usuarios-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal btn-modal-secondary" onclick="fecharModal('modal-usuarios')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SENHA PROVISÓRIA (ADMIN) -->
+<div class="modal" id="modal-temp-senha">
+  <div class="modal-content">
+    <div class="modal-header"><span>Senha provisória gerada</span></div>
+    <div class="modal-body">
+      <p style="font-size:13px;">Usuário: <b id="temp-usuario"></b></p>
+      <div class="senha-temp" id="temp-senha"></div>
+      <p style="font-size:12px;color:var(--text3);line-height:1.5;">Repasse esta senha ao usuário. Ela não será exibida novamente. No primeiro acesso, o sistema vai exigir que ele crie uma nova senha.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal btn-modal-secondary" onclick="copiarSenhaTemp()">Copiar senha</button>
+      <button class="btn-modal btn-modal-primary" onclick="fecharSenhaTemp()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL ALTERAR SENHA -->
 <div class="modal" id="modal-criar-senha">
   <div class="modal-content">
     <div class="modal-header">
       <span>Alterar Minha Senha</span>
-      <button class="modal-close" onclick="fecharModal('modal-criar-senha')">×</button>
+      <button class="modal-close" id="trocar-fechar" onclick="fecharTrocarSenha()">×</button>
     </div>
     <div class="modal-body">
+      <div id="trocar-aviso" class="aviso-senha">Você acessou com uma senha provisória. Defina agora a sua nova senha para continuar.</div>
       <div class="form-group">
         <label>Usuário</label>
-        <input type="text" id="trocar-username" placeholder="Seu nome de usuário...">
+        <input type="text" id="trocar-username" placeholder="Seu nome de usuário..." readonly>
       </div>
       <div class="form-group">
         <label>Senha atual</label>
@@ -2179,7 +2246,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-modal btn-modal-secondary" onclick="fecharModal('modal-criar-senha')">Cancelar</button>
+      <button class="btn-modal btn-modal-secondary" id="trocar-cancelar" onclick="fecharTrocarSenha()">Cancelar</button>
       <button class="btn-modal btn-modal-primary" onclick="confirmarTrocarSenha()">Salvar nova senha</button>
     </div>
   </div>
@@ -2214,6 +2281,8 @@
         </div>
       </div>
       <div class="user-badge" id="user-badge">Usuário</div>
+      <button class="btn-logout" id="btn-usuarios" onclick="abrirUsuarios()" style="display:none;">👥 Usuários</button>
+      <button class="btn-logout" id="btn-senha-header" onclick="abrirTrocarSenha(false)">🔑 Alterar senha</button>
       <button class="btn-logout" onclick="fazerLogout()">Sair</button>
     </div>
   </div>
@@ -2640,6 +2709,7 @@
     const tabs = document.querySelectorAll('.login-tab');
     if (tipo === 'entrar') tabs[0].classList.add('active'); else tabs[1].classList.add('active');
     document.getElementById('form-'+tipo).classList.add('active');
+    const _inf = document.getElementById('login-info'); if (_inf) _inf.style.display = 'none';
     document.getElementById('login-error').classList.remove('show');
   }
 
@@ -2704,13 +2774,15 @@
     errorDiv.classList.remove('show');
     const username = document.getElementById('login-username').value.trim().toLowerCase();
     const senha    = document.getElementById('login-senha').value;
+    document.getElementById('login-info').style.display = 'none';
     if (!username || !senha) return err('❌ Preencha usuário e senha.');
     try {
-      const rows = await sb.get('usuarios?username=eq.'+encodeURIComponent(username)+'&select=id,username,tipo,senha_hash');
+      const rows = await sb.get('usuarios?username=eq.'+encodeURIComponent(username)+'&select=*');
       if (!rows || rows.length===0)           return err('❌ Usuário não encontrado.');
       const user = rows[0];
       if (hashSenha(senha) !== user.senha_hash) return err('❌ Senha incorreta. Tente novamente.');
-      usuarioAtual = { id: user.id, username: user.username, tipo: user.tipo };
+      usuarioAtual = { id: user.id, username: user.username, tipo: user.tipo, trocar_senha: user.trocar_senha === true };
+      document.getElementById('btn-usuarios').style.display = user.tipo==='admin' ? '' : 'none';
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('header').style.display = 'block';
       document.getElementById('main').style.display   = 'grid';
@@ -2728,13 +2800,15 @@
       }
       await carregarChamados();
       intervalChamados = setInterval(carregarChamados, 5000);
+      if (usuarioAtual.trocar_senha) abrirTrocarSenha(true);
     } catch(e) { err('❌ Erro ao conectar: '+e.message); }
   }
 
   function fazerLogout() {
     if (intervalRealtime) { clearInterval(intervalRealtime); intervalRealtime = null; }
     if (intervalChamados) { clearInterval(intervalChamados); intervalChamados = null; }
-    usuarioAtual=null; chamados=[];
+    usuarioAtual=null; chamados=[]; senhaForcada=false;
+    ['modal-criar-senha','modal-usuarios','modal-temp-senha'].forEach(fecharModal); senhaTemp='';
     document.getElementById('login-screen').style.display='flex';
     document.getElementById('header').style.display='none';
     document.getElementById('main').style.display='none';
@@ -2745,11 +2819,23 @@
     trocarAbaLogin('entrar');
   }
 
-  function abrirTrocarSenha() {
-    ['trocar-username','trocar-atual','criar-pwd-nova','criar-pwd-confirmar'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  let senhaForcada = false, usuariosLista = [], senhaTemp = '';
+
+  // "Esqueci minha senha": orienta a procurar o administrador, que gera uma senha provisória
+  function esqueci() {
+    document.getElementById('login-error').classList.remove('show');
+    const info = document.getElementById('login-info');
+    info.textContent = 'Para redefinir a senha, entre em contato com o administrador do sistema na Secretaria Municipal de Educação. Você receberá uma senha provisória e criará uma nova no primeiro acesso.';
+    info.style.display = 'block';
+  }
+
+  function abrirTrocarSenha(forcada) {
+    if (!usuarioAtual) return;
+    senhaForcada = forcada === true;
+    ['trocar-atual','criar-pwd-nova','criar-pwd-confirmar'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('trocar-username').value = usuarioAtual.username;
     document.getElementById('criar-forca-fill').style.width='0%';
     document.getElementById('criar-forca-texto').textContent='';
-    // Reseta requisitos visuais
     ['treq-len','treq-upper','treq-lower','treq-special'].forEach(id=>{
       const el=document.getElementById(id);
       el.classList.remove('ok');
@@ -2757,32 +2843,115 @@
     });
     const err=document.getElementById('modal-criar-erro'); err.textContent=''; err.style.display='none';
     document.getElementById('modal-criar-ok').style.display='none';
-    if (usuarioAtual) document.getElementById('trocar-username').value=usuarioAtual.username;
+    document.getElementById('trocar-aviso').style.display = senhaForcada ? 'block' : 'none';
+    document.getElementById('trocar-fechar').style.display = senhaForcada ? 'none' : '';
+    document.getElementById('trocar-cancelar').style.display = senhaForcada ? 'none' : '';
     abrirModal('modal-criar-senha');
+  }
+
+  function fecharTrocarSenha() { if (!senhaForcada) fecharModal('modal-criar-senha'); }
+
+  // grava o novo hash; se a coluna trocar_senha ainda não existir, grava só a senha
+  async function gravarSenha(id, hash, trocar) {
+    const alvo = 'usuarios?id=eq.' + encodeURIComponent(id);
+    try {
+      return await sb.patch(alvo, { senha_hash: hash, trocar_senha: trocar });
+    } catch (e) {
+      if (!trocar && /trocar_senha/i.test(e.message || '')) return await sb.patch(alvo, { senha_hash: hash });
+      throw e;
+    }
   }
 
   async function confirmarTrocarSenha() {
     const errel=document.getElementById('modal-criar-erro');
     const err=msg=>{errel.textContent=msg;errel.style.display='block';};
     errel.style.display='none'; document.getElementById('modal-criar-ok').style.display='none';
-    const username = document.getElementById('trocar-username').value.trim().toLowerCase();
+    if (!usuarioAtual) return err('❌ Sessão expirada. Entre novamente.');
+    const username = usuarioAtual.username;
     const atual    = document.getElementById('trocar-atual').value;
     const nova     = document.getElementById('criar-pwd-nova').value;
     const confirma = document.getElementById('criar-pwd-confirmar').value;
-    if (!username||!atual||!nova||!confirma) return err('❌ Preencha todos os campos.');
+    if (!atual||!nova||!confirma)            return err('❌ Preencha todos os campos.');
     if (nova.length<8)                       return err('❌ A senha deve ter no mínimo 8 caracteres.');
     if (!/[A-Z]/.test(nova))                 return err('❌ A senha deve ter pelo menos uma letra maiúscula (Ex: A, B, C).');
     if (!/[a-z]/.test(nova))                 return err('❌ A senha deve ter pelo menos uma letra minúscula (Ex: a, b, c).');
     if (!/[^A-Za-z0-9]/.test(nova))          return err('❌ A senha deve ter pelo menos um caractere especial (Ex: * ! & @ # $).');
     if (nova!==confirma)                     return err('❌ As senhas não coincidem.');
+    if (nova===atual)                        return err('❌ A nova senha deve ser diferente da atual.');
     try {
       const rows = await sb.get('usuarios?username=eq.'+encodeURIComponent(username)+'&select=id,senha_hash');
       if (!rows||rows.length===0) return err('❌ Usuário não encontrado.');
       if (hashSenha(atual)!==rows[0].senha_hash) return err('❌ Senha atual incorreta.');
-      await sb.patch('usuarios?id=eq.'+rows[0].id, {senha_hash:hashSenha(nova)});
+      const res = await gravarSenha(rows[0].id, hashSenha(nova), false);
+      if (!res || !res.length) return err('❌ Não foi possível salvar. Verifique a política UPDATE da tabela usuarios no Supabase.');
+      senhaForcada = false; usuarioAtual.trocar_senha = false;
       document.getElementById('modal-criar-ok').style.display='block';
-      setTimeout(()=>{ fecharModal('modal-criar-senha'); showToast('✅ Senha alterada com sucesso!'); }, 1800);
+      setTimeout(()=>{ fecharModal('modal-criar-senha'); showToast('✅ Senha alterada com sucesso!'); }, 1200);
     } catch(e) { err('❌ Erro ao salvar: '+e.message); }
+  }
+
+  // ── ADMIN: lista de usuários e redefinição de senha ──
+  async function abrirUsuarios() {
+    if (!usuarioAtual || usuarioAtual.tipo !== 'admin') return;
+    document.getElementById('usuarios-busca').value = '';
+    abrirModal('modal-usuarios');
+    await carregarUsuarios();
+  }
+
+  async function carregarUsuarios() {
+    const erro = document.getElementById('usuarios-erro'); erro.classList.remove('show');
+    try {
+      usuariosLista = (await sb.get('usuarios?select=*&order=username.asc')) || [];
+      renderUsuarios();
+    } catch(e) { erro.textContent = '❌ Erro ao carregar usuários: ' + e.message; erro.classList.add('show'); }
+  }
+
+  function renderUsuarios() {
+    const q = document.getElementById('usuarios-busca').value.trim().toLowerCase();
+    const rows = usuariosLista.filter(u => !q || (u.username||'').toLowerCase().includes(q));
+    document.getElementById('usuarios-tbody').innerHTML = rows.map(u => {
+      const eu = usuarioAtual && String(u.id) === String(usuarioAtual.id);
+      const st = u.trocar_senha ? '<span class="st-pill pend">Provisória pendente</span>' : '<span class="st-pill ok">Normal</span>';
+      return '<tr><td>' + escHtml(String(u.username||'')) + (eu ? ' <small>(você)</small>' : '') + '</td>'
+        + '<td>' + (u.tipo==='admin' ? '🔐 Admin' : '👤 Usuário') + '</td><td>' + st + '</td>'
+        + '<td><button class="btn-redef" data-id="' + escHtml(String(u.id)) + '" onclick="redefinirSenha(this.dataset.id)"' + (eu ? ' disabled title="Use \\"Alterar senha\\" para a sua própria conta"' : '') + '>Redefinir senha</button></td></tr>';
+    }).join('') || '<tr><td colspan="4">Nenhum usuário encontrado.</td></tr>';
+  }
+
+  function gerarSenhaProvisoria() {
+    const U='ABCDEFGHJKLMNPQRSTUVWXYZ', L='abcdefghijkmnpqrstuvwxyz', N='23456789', S='!@#$*&';
+    const rnd = n => crypto.getRandomValues(new Uint32Array(1))[0] % n, r = a => a[rnd(a.length)];
+    const p = [r(U),r(U),r(L),r(L),r(L),r(L),r(N),r(N),r(S),r(S)];
+    for (let i=p.length-1;i>0;i--) { const j=rnd(i+1); [p[i],p[j]]=[p[j],p[i]]; }
+    return p.join('');
+  }
+
+  async function redefinirSenha(id) {
+    if (!usuarioAtual || usuarioAtual.tipo !== 'admin') return;
+    const u = usuariosLista.find(x => String(x.id) === String(id));
+    if (!u) return;
+    if (!confirm('Gerar uma senha provisória para "' + u.username + '"? A senha atual deixará de funcionar.')) return;
+    const s = gerarSenhaProvisoria();
+    try {
+      const res = await sb.patch('usuarios?id=eq.' + encodeURIComponent(u.id), { senha_hash: hashSenha(s), trocar_senha: true });
+      if (!res || !res.length) throw new Error('nenhuma linha atualizada (verifique a política UPDATE da tabela usuarios)');
+      senhaTemp = s;
+      document.getElementById('temp-usuario').textContent = u.username;
+      document.getElementById('temp-senha').textContent = s;
+      abrirModal('modal-temp-senha');
+      carregarUsuarios();
+    } catch(e) {
+      const dica = /trocar_senha/i.test(e.message||'') ? ' Execute no Supabase: ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS trocar_senha boolean NOT NULL DEFAULT false;' : '';
+      showToast('❌ Não foi possível redefinir a senha: ' + e.message + dica, true);
+    }
+  }
+
+  function copiarSenhaTemp() {
+    if (navigator.clipboard) navigator.clipboard.writeText(senhaTemp).then(()=>showToast('✅ Senha copiada.'), ()=>{});
+  }
+  function fecharSenhaTemp() {
+    senhaTemp = ''; document.getElementById('temp-senha').textContent = '';
+    fecharModal('modal-temp-senha');
   }
 
   function avaliarForcaCad() {
