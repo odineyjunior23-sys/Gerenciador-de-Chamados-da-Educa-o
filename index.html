@@ -2218,6 +2218,12 @@
 .fs-opt.fs-dim:not(.fs-active) { opacity: .45; }
 .fs-opt .fs-hl { color: var(--pri-dark); font-weight: 700; background: rgba(253,195,0,.38); border-radius: 2px; }
 @media (max-width: 600px) { .fs-pop input.fs-input, .fs-pop input.fs-input:focus { font-size: 16px; } }
+.stat-card { cursor: pointer; }
+.stat-card:focus-visible { outline: 3px solid #9cc7ec; outline-offset: 1px; }
+.stat-card.stat-active { border-color: var(--pri); background: var(--pri-light); box-shadow: 0 0 0 1px var(--pri); }
+.filtro-banner { align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 8px 14px; background: var(--pri-light); border: 1px solid var(--pri); border-radius: var(--radius); color: var(--pri-dark); font-size: 13px; }
+.filtro-limpar { background: #fff; border: 1px solid var(--pri); color: var(--pri); border-radius: 24px; padding: 4px 12px; font-size: 11px; font-weight: 600; cursor: pointer; }
+.filtro-limpar:hover { background: var(--pri); color: #fff; }
 .fz-hl { background: rgba(253,195,0,.42); color: inherit; font-weight: 700; border-radius: 2px; padding: 0 1px; }
 </style>
 </head>
@@ -2490,7 +2496,7 @@
 
   <!-- STATS (apenas admin) -->
   <div class="stats-bar" id="stats-bar" style="display:none;">
-    <div class="stat-card">
+    <div class="stat-card" data-stat="total" role="button" tabindex="0" title="Ver todos os chamados" onclick="filtrarPorCard('total')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filtrarPorCard('total');}">
       <div class="stat-icon si-total">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 12h6M9 16h6M5 8h14M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z"/>
@@ -2501,7 +2507,7 @@
         <div class="stat-label">Total de chamados</div>
       </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" data-stat="baixa" role="button" tabindex="0" title="Ver chamados de urgência baixa" onclick="filtrarPorCard('baixa')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filtrarPorCard('baixa');}">
       <div class="stat-icon si-baixa">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/>
@@ -2512,7 +2518,7 @@
         <div class="stat-label">Urgência baixa</div>
       </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" data-stat="media" role="button" tabindex="0" title="Ver chamados de urgência média" onclick="filtrarPorCard('media')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filtrarPorCard('media');}">
       <div class="stat-icon si-media">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 3l1.88 5.79H20l-4.94 3.59 1.88 5.79L12 14.58l-4.94 3.59 1.88-5.79L4 8.79h6.12z"/>
@@ -2523,7 +2529,7 @@
         <div class="stat-label">Urgência média</div>
       </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" data-stat="alta" role="button" tabindex="0" title="Ver chamados de urgência alta" onclick="filtrarPorCard('alta')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filtrarPorCard('alta');}">
       <div class="stat-icon si-alta">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
@@ -2534,7 +2540,7 @@
         <div class="stat-label">Urgência alta</div>
       </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" data-stat="pendente" role="button" tabindex="0" title="Ver chamados pendentes" onclick="filtrarPorCard('pendente')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filtrarPorCard('pendente');}">
       <div class="stat-icon si-pendente">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="9"/><path d="M12 7v5l-3 2"/>
@@ -2545,7 +2551,7 @@
         <div class="stat-label">Chamados pendentes</div>
       </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" data-stat="fechado" role="button" tabindex="0" title="Ver chamados fechados" onclick="filtrarPorCard('fechado')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filtrarPorCard('fechado');}">
       <div class="stat-icon si-fechado">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -2690,6 +2696,7 @@
           <button class="filter-btn" data-filter="fechado"       onclick="setFiltro(this)">Fechados</button>
           <button class="filter-btn" data-filter="alta"          onclick="setFiltro(this)">Alta urgência</button>
         </div>
+        <div class="filtro-banner" id="filtro-banner" style="display:none;"></div>
       </div>
       <div class="lista-body" id="lista"></div>
     </div>
@@ -3384,6 +3391,24 @@
     } catch(e) { showToast('Erro ao excluir: '+e.message,true); }
   }
 
+  function filtrarPorCard(tipo, rolar) {
+    const mapa={total:'todos',baixa:'urgencia-baixa',media:'urgencia-media',alta:'urgencia-alta',pendente:'pendente',fechado:'fechado'};
+    filtroAtivo=mapa[tipo]||'todos';
+    const bu=document.getElementById('busca'); if(bu) bu.value='';
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===filtroAtivo));
+    renderLista();
+    if(rolar!==false){ const alvo=document.querySelector('.list-controls'); if(alvo) alvo.scrollIntoView({behavior:'smooth',block:'start'}); }
+  }
+  function atualizarFiltroUI(n) {
+    const mapa={'todos':'total','urgencia-baixa':'baixa','urgencia-media':'media','urgencia-alta':'alta','pendente':'pendente','fechado':'fechado'};
+    document.querySelectorAll('#stats-bar .stat-card').forEach(el=>el.classList.toggle('stat-active',el.dataset.stat===mapa[filtroAtivo]));
+    const bn=document.getElementById('filtro-banner'); if(!bn) return;
+    if(filtroAtivo.startsWith('urgencia-')){
+      const nome={baixa:'baixa',media:'média',alta:'alta'}[filtroAtivo.slice(9)];
+      bn.innerHTML=`<span>Mostrando chamados com <b>urgência ${nome}</b> · ${n} ${n===1?'chamado':'chamados'}</span><button type="button" class="filtro-limpar" onclick="filtrarPorCard('total',false)">Limpar filtro</button>`;
+      bn.style.display='flex';
+    } else bn.style.display='none';
+  }
   function setFiltro(btn) {
     document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active'); filtroAtivo=btn.dataset.filter; renderLista();
@@ -3406,6 +3431,7 @@
       if(filtroAtivo==='pendente') return c.status==='pendente';
       if(filtroAtivo==='fechado')  return c.status==='fechado';
       if(filtroAtivo==='alta')     return c.urgencia==='alta'&&c.status==='aberto';
+      if(filtroAtivo.startsWith('urgencia-')) return c.urgencia===filtroAtivo.slice(9);
       return true;
     });
     let info=null;
@@ -3413,6 +3439,7 @@
       if(window.FuzzyBusca){ const r=window.FuzzyBusca.buscarChamados(filtrados,busca); filtrados=r.lista; info=r.info; }
       else { const b=busca.toLowerCase(); filtrados=filtrados.filter(c=>c.local.toLowerCase().includes(b)||c.problema.toLowerCase().includes(b)||(c.nome_solicitante||'').toLowerCase().includes(b)); }
     }
+    atualizarFiltroUI(filtrados.length);
     const H=(c,f)=>window.FuzzyBusca?window.FuzzyBusca.destacar(c[f],info&&info.get(c.id)&&info.get(c.id)[f==='nome_solicitante'?'nome':f]):escHtml(c[f]||'');
     if(filtrados.length===0){
       lista.innerHTML=`<div class="lista-empty"><div class="empty-circle"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6M9 16h6M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z"/></svg></div><p>Nenhum chamado encontrado.</p></div>`;
@@ -3510,6 +3537,7 @@
       if(filtroAtivo==='pendente') return c.status==='pendente';
       if(filtroAtivo==='fechado')  return c.status==='fechado';
       if(filtroAtivo==='alta')     return c.urgencia==='alta'&&c.status==='aberto';
+      if(filtroAtivo.startsWith('urgencia-')) return c.urgencia===filtroAtivo.slice(9);
       return true;
     });
     return busca.trim()&&window.FuzzyBusca?window.FuzzyBusca.buscarChamados(base,busca).lista:base.filter(c=>!busca.trim()||[c.local,c.problema,c.nome_solicitante||''].some(t=>t.toLowerCase().includes(busca.toLowerCase())));
